@@ -4,8 +4,8 @@ import Info from "../Info";
 
 export default function ImportJSON({ onImport }) {
   const fileInputRef = useRef(null);
-  const [showInfo, setShowInfo] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showInfo, setShowInfo] = useState(false);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -97,13 +97,10 @@ export default function ImportJSON({ onImport }) {
         return;
       }
 
-      // Notify parent component with success message
+      // Notify parent component with valid fields, invalid count, and total count
       if (onImport) {
-        const message =
-          invalidCount > 0
-            ? `imported ${validFields.length} field(s), ${invalidCount} skipped`
-            : `imported ${validFields.length} field(s) successfully`;
-        onImport(validFields, message);
+        const totalInFile = Object.keys(profileData).length;
+        onImport(validFields, invalidCount, totalInFile);
       }
     } catch (error) {
       console.error("Error importing JSON:", error);
@@ -138,7 +135,7 @@ export default function ImportJSON({ onImport }) {
   return (
     <div>
       <div
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 border-[#e2e8f0] hover:border-[#0f172a] border rounded-lg bg-white text-[#0f172a] hover:bg-[#f0f0f0]"
         onMouseEnter={() => setShowInfo(true)}
         onMouseLeave={() => setShowInfo(false)}
       >
@@ -151,7 +148,7 @@ export default function ImportJSON({ onImport }) {
         />
         <button
           onClick={handleImportClick}
-          className="flex-1 py-2.5 px-3 rounded-lg border border-[#e2e8f0] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center justify-start gap-2.5"
+          className="flex-1 py-2.5 px-3 text-[12px] font-medium cursor-pointer transition-all duration-200 flex items-center justify-start gap-2.5"
         >
           <ImportIcon />
           import as JSON
@@ -159,10 +156,9 @@ export default function ImportJSON({ onImport }) {
         {showInfo && (
           <button
             onClick={handleViewSample}
-            className="py-2.5 px-2.5 rounded-lg border border-[#e2e8f0] text-[11px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center gap-1.5 whitespace-nowrap"
-            title="Download sample JSON format"
+            className="py-2.5 px-2.5 text-[11px] font-medium cursor-pointer transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap"
+            title="view sample JSON format"
           >
-            <span>view format</span>
             <Info />
           </button>
         )}

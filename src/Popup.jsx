@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Autofill from "./components/Autofill";
 import Save from "./components/Save";
 import Reset from "./components/Reset";
@@ -9,6 +9,7 @@ import Tick from "./components/Tick";
 import Modal from "./components/Modal";
 import More from "./components/More";
 import MoreModal from "./components/MoreModal";
+import { FIELDS } from "./constants";
 
 export default function Popup() {
   const [formData, setFormData] = useState({});
@@ -22,43 +23,6 @@ export default function Popup() {
   const [status, setStatus] = useState("");
   const [modalError, setModalError] = useState("");
   const [copiedField, setCopiedField] = useState(null);
-
-  const FIELDS = [
-    { key: "email", label: "email" },
-    { key: "prn", label: "prn" },
-    { key: "fullName", label: "full name" },
-    { key: "dob", label: "dob (yyyy-mm-dd)" },
-    { key: "mobile", label: "mobile" },
-    { key: "gender", label: "gender (male/female)" },
-    { key: "college", label: "college name" },
-    { key: "course", label: "course" },
-    { key: "branch", label: "branch" },
-    { key: "passYear", label: "year of passing" },
-    { key: "tenthPercent", label: "10th %" },
-    { key: "twelfthPercent", label: "12th %" },
-    { key: "diplomaPercent", label: "diploma %" },
-    { key: "degreePercent", label: "be/btech %" },
-    { key: "cocubesScore", label: "cocubes score" },
-    { key: "hackerrankRating", label: "hackerrank rating (0-5)" },
-    { key: "hackerrankLink", label: "hackerrank profile link" },
-    { key: "leetcodeScore", label: "leetcode score" },
-    { key: "leetcodeLink", label: "leetcode profile link" },
-    { key: "codechefRating", label: "codechef rating (0-5)" },
-    { key: "codechefLink", label: "codechef profile link" },
-    { key: "hackerearthRating", label: "hackerearth rating (0-5)" },
-    { key: "hackerearthLink", label: "hackerearth profile link" },
-    { key: "projects", label: "projects", textarea: true },
-    {
-      key: "techAchievements",
-      label: "technical achievements",
-      textarea: true,
-    },
-    {
-      key: "personalAchievements",
-      label: "personal achievements",
-      textarea: true,
-    },
-  ];
 
   const handleChange = (key, value) =>
     setFormData((p) => ({ ...p, [key]: value }));
@@ -102,25 +66,30 @@ export default function Popup() {
     setShowModal(false);
   };
 
-  const handleImportFields = (importedFields) => {
-    if (!importedFields || importedFields.length === 0) return;
+  const handleImportFields = (importedFields, totalInFile) => {
+    if (!importedFields || importedFields.length === 0) return 0;
 
-    // Merge with existing custom fields, avoiding duplicates with both standard and custom fields
-    setCustomFields((prevFields) => {
-      // Collect all existing labels (both standard fields and custom fields)
-      const existingLabels = new Set([
-        ...FIELDS.map((f) => f.label.toLowerCase()),
-        ...prevFields.map((f) => f.labelKeyword.toLowerCase()),
-      ]);
+    // Collect all existing field labels (visible standard fields + custom fields)
+    const existingLabels = new Set([
+      ...FIELDS.filter((f) => !removedKeys.has(f.key)).map((f) =>
+        f.label.toLowerCase()
+      ),
+      ...customFields.map((f) => f.labelKeyword.toLowerCase()),
+    ]);
 
-      // Filter out imported fields that match existing labels
-      const newFields = importedFields.filter(
-        (field) => !existingLabels.has(field.labelKeyword.toLowerCase())
-      );
+    // Filter out imported fields that already exist
+    const newFields = importedFields.filter(
+      (field) => !existingLabels.has(field.labelKeyword.toLowerCase())
+    );
 
-      // Add all new fields to the bottom
-      return [...prevFields, ...newFields];
-    });
+    const duplicateCount = importedFields.length - newFields.length;
+
+    // Add all new fields as custom fields
+    if (newFields.length > 0) {
+      setCustomFields((prevFields) => [...prevFields, ...newFields]);
+    }
+
+    return duplicateCount;
   };
 
   const removeCustom = (i) =>
@@ -196,7 +165,7 @@ export default function Popup() {
       if (!tabs || !tabs[0]) {
         showStatus(
           setFillStatus,
-          "no active tab found. open the form tab.",
+          "no active tab found. open the form tab",
           1600
         );
         return;
@@ -204,7 +173,7 @@ export default function Popup() {
 
       const tab = tabs[0];
       if (!tab.url || !tab.url.includes("docs.google.com/forms")) {
-        showStatus(setFillStatus, "please open a google form tab first.", 1600);
+        showStatus(setFillStatus, "please open a google form tab first", 1600);
         return;
       }
 
@@ -213,7 +182,7 @@ export default function Popup() {
           if (chrome.runtime.lastError) {
             showStatus(
               setFillStatus,
-              "please refresh the google form page and try again.",
+              "please refresh the google form page and try again",
               2000
             );
           } else if (response && !response.success) {
@@ -229,7 +198,7 @@ export default function Popup() {
       } catch (e) {
         showStatus(
           setFillStatus,
-          "unable to trigger fill. please reopen the form.",
+          "unable to trigger fill. please reopen the form",
           1600
         );
       }
@@ -244,7 +213,7 @@ export default function Popup() {
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (!tabs || !tabs[0]) {
-        showStatus(setStatus, "no active tab found. open the form tab.", 1600);
+        showStatus(setStatus, "no active tab found. open the form tab", 1600);
         return;
       }
 
@@ -256,7 +225,7 @@ export default function Popup() {
             if (chrome.runtime.lastError) {
               showStatus(
                 setStatus,
-                "please reload the google form tab to reset again.",
+                "please reload the google form tab to reset again",
                 2000
               );
             } else {
@@ -267,7 +236,7 @@ export default function Popup() {
       } catch (e) {
         showStatus(
           setStatus,
-          "unable to reset form. please reopen the form.",
+          "unable to reset form. please reopen the form",
           1600
         );
       }
@@ -292,48 +261,51 @@ export default function Popup() {
   }, []);
 
   return (
-    <div className="m-3 p-0 bg-white border border-black rounded-md">
-      <div className="bg-white p-1 w-[360px] m-2.5">
+    <div className="m-2 bg-white border border-black rounded-md overflow-hidden h-[570px]">
+      <div className="w-[380px] flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex-1">
-            <h1 className="text-[18px] font-semibold m-0 mb-1 text-[#0f172a]">
-              Autofill Google Forms
-            </h1>
-            <div className="text-[12px] text-gray-500 mb-2.5 w-[85%]">
-              Save your details once and reuse them across similar google forms.
+        <div className="p-3 border-b border-black shrink-0 bg-black/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex-1">
+              <h1 className="text-[20px] font-semibold m-0 mb-1 text-[#0f172a]">
+                Autofill Google Forms
+              </h1>
+              <div className="text-[12px] text-gray-500 mb-0 w-[85%]">
+                Save your details once and reuse them across similar google
+                forms.
+              </div>
+            </div>
+            <button
+              onClick={() => setShowMoreModal(true)}
+              className="border-none bg-transparent text-[#0f172a] cursor-pointer p-2 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
+              title="more options"
+            >
+              <More />
+            </button>
+          </div>
+
+          {/* Primary action button */}
+          <div>
+            <button
+              id="fillBtn"
+              type="button"
+              onClick={handleFill}
+              className="w-full py-3 px-3 rounded-lg border-none text-[13px] font-semibold cursor-pointer bg-[#00b176] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
+            >
+              <Autofill />
+              autofill google form
+            </button>
+            <div
+              id="fillStatus"
+              className="text-[13px] text-center text-[#16a34a] min-h-3.5 mt-1"
+            >
+              {fillStatus}
             </div>
           </div>
-          <button
-            onClick={() => setShowMoreModal(true)}
-            className="border-none bg-transparent text-[#0f172a] cursor-pointer p-2 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-            title="More options"
-          >
-            <More />
-          </button>
         </div>
 
-        {/* Primary action button */}
-        <div className="mb-1 pb-1">
-          <button
-            id="fillBtn"
-            type="button"
-            onClick={handleFill}
-            className="w-full py-3 px-3 rounded-lg border-none text-[13px] font-semibold cursor-pointer bg-[#00b176] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2.5"
-          >
-            <Autofill />
-            autofill google form
-          </button>
-          <div
-            id="fillStatus"
-            className="mt-1.5 text-[13px] text-center text-[#16a34a] min-h-3.5"
-          >
-            {fillStatus}
-          </div>
-        </div>
-
-        {/* Fields list */}
-        <div className="mb-2 pb-1.5">
+        {/* Fields list - scrollable */}
+        <div className="flex-1 overflow-y-auto px-3 mb-3 pb-1.5 mt-3">
           {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
           customFields.length === 0 ? (
             <div className="text-center py-2 px-4">
@@ -358,7 +330,7 @@ export default function Popup() {
                           type="button"
                           onClick={() => handleCopy(f.key, formData[f.key])}
                           className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-                          title="Copy"
+                          title="copy"
                         >
                           {copiedField === f.key ? <Tick /> : <Copy />}
                         </button>
@@ -366,7 +338,7 @@ export default function Popup() {
                           type="button"
                           onClick={() => handleRemoveField(f.key)}
                           className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
-                          title="Remove"
+                          title="remove"
                         >
                           <Trash />
                         </button>
@@ -431,46 +403,49 @@ export default function Popup() {
           )}
         </div>
 
-        {/* add custom field */}
-        <div className="mb-3 mt-2">
-          <button
-            id="addCustomBtn"
-            type="button"
-            onClick={() => setShowModal(true)}
-            className="text-[12px] py-2.5 px-3 rounded-lg border-2 border-dashed border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
-          >
-            <Add />
-            add custom field
-          </button>
-        </div>
+        {/* Fixed bottom section */}
+        <div className="border-t border-black px-2.5 pb-2 pt-2.5 shrink-0 bg-black/5">
+          {/* add custom field */}
+          <div className="mb-2">
+            <button
+              id="addCustomBtn"
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="text-[12px] py-2 px-3 rounded-lg border-2 border-dashed border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
+            >
+              <Add />
+              add custom field
+            </button>
+          </div>
 
-        {/* bottom actions */}
-        <div className="flex flex-col gap-2 mt-3.5 pt-3.5">
-          <button
-            id="saveBtn"
-            type="button"
-            onClick={handleSave}
-            className="w-full py-2.5 px-2.5 rounded-lg border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#101010] text-white hover:bg-[#404040] flex items-center justify-center gap-2.5"
-          >
-            <Save />
-            save profile
-          </button>
+          {/* bottom actions */}
+          <div className="flex flex-col gap-2">
+            <button
+              id="saveBtn"
+              type="button"
+              onClick={handleSave}
+              className="w-full py-2 px-2.5 rounded-lg border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#101010] text-white hover:bg-[#404040] flex items-center justify-center gap-2.5"
+            >
+              <Save />
+              save profile
+            </button>
 
-          <button
-            id="resetBtn"
-            type="button"
-            onClick={handleReset}
-            className="w-full py-2.5 px-2.5 rounded-lg border-2 border-[#dc2626] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#dc2626] hover:bg-[#fee2e2] hover:border-solid flex items-center justify-center gap-2.5"
-          >
-            <Reset />
-            reset google form
-          </button>
+            <button
+              id="resetBtn"
+              type="button"
+              onClick={handleReset}
+              className="w-full py-2 px-2.5 rounded-lg border border-[#dc2626] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#dc2626] hover:bg-[#fce4e4] hover:border-solid flex items-center justify-center gap-2.5"
+            >
+              <Reset />
+              reset google form
+            </button>
 
-          <div
-            id="status"
-            className="mt-1.5 text-[13px] text-center text-[#16a34a] min-h-3.5"
-          >
-            {status}
+            <div
+              id="status"
+              className="mt-1 text-[13px] text-center text-[#16a34a]"
+            >
+              {status}
+            </div>
           </div>
         </div>
 

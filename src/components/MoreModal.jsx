@@ -12,10 +12,18 @@ export default function MoreModal({
 }) {
   const [importStatus, setImportStatus] = useState("");
 
-  const handleImport = (fields, message) => {
+  const handleImport = (fields, invalidCount, totalInFile) => {
+    const duplicateCount = onImportFields(fields, totalInFile);
+    const totalSkipped = invalidCount + duplicateCount;
+    const validCount = fields.length - duplicateCount;
+
+    const message =
+      totalSkipped > 0
+        ? `imported ${validCount} field(s), ${totalSkipped} skipped`
+        : `imported ${validCount} field(s) successfully`;
+
     setImportStatus(message);
-    onImportFields(fields);
-    setTimeout(() => setImportStatus(""), 3000);
+    setTimeout(() => setImportStatus(""), 2000);
   };
 
   return (
@@ -54,7 +62,7 @@ export default function MoreModal({
             onClick={onClose}
             className="w-full py-2.5 px-3 rounded-lg border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#f1f5f9] text-[#475569] hover:bg-[#e2e8f0] mt-2"
           >
-            cancel
+            close
           </button>
         </div>
       </div>
