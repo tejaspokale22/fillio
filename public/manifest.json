@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Autofill Google Forms",
+  "version": "1.3.0",
+  "description": "Autofill repetitive Google Forms for students, especially during placements.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://docs.google.com/forms/*"
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Google Form Autofill"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/forms/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
