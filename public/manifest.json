@@ -3,10 +3,14 @@
   "name": "Autofill Google Forms",
   "version": "1.3.0",
   "description": "Autofill repetitive google forms for students, especially during placements.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
-    "https://docs.google.com/forms/*"
+    "https://docs.google.com/forms/*",
+    "https://api.openai.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "index.html",
     "default_title": "Google Form Autofill"

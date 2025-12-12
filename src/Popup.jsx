@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Autofill from "./components/Autofill";
 import Save from "./components/Save";
-import Reset from "./components/Reset";
 import Add from "./components/Add";
 import Trash from "./components/Trash";
 import Copy from "./components/Copy";
@@ -33,9 +32,12 @@ export default function Popup() {
       cp[key] = "";
       return cp;
     });
-    setRemovedKeys((s) => new Set(s).add(key));
+    setRemovedKeys((s) => {
+      const ns = new Set(s);
+      ns.add(key);
+      return ns;
+    });
 
-    // Save to chrome storage
     if (typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.sync.get(["profile", "hiddenStandardFields"], (res) => {
         const currentProfile = res.profile || {};
@@ -69,7 +71,6 @@ export default function Popup() {
   const handleImportFields = (importedFields, totalInFile) => {
     if (!importedFields || importedFields.length === 0) return 0;
 
-    // Collect all existing field labels (visible standard fields + custom fields)
     const existingLabels = new Set([
       ...FIELDS.filter((f) => !removedKeys.has(f.key)).map((f) =>
         f.label.toLowerCase()
@@ -77,14 +78,12 @@ export default function Popup() {
       ...customFields.map((f) => f.labelKeyword.toLowerCase()),
     ]);
 
-    // Filter out imported fields that already exist
     const newFields = importedFields.filter(
       (field) => !existingLabels.has(field.labelKeyword.toLowerCase())
     );
 
     const duplicateCount = importedFields.length - newFields.length;
 
-    // Add all new fields as custom fields
     if (newFields.length > 0) {
       setCustomFields((prevFields) => [...prevFields, ...newFields]);
     }
@@ -102,7 +101,7 @@ export default function Popup() {
   };
 
   const handleCopy = async (fieldKey, value) => {
-    if (!value || !value.trim()) return;
+    if (!value || !String(value).trim()) return;
 
     try {
       await navigator.clipboard.writeText(value);
@@ -119,12 +118,10 @@ export default function Popup() {
   };
 
   const handleSave = () => {
-    // Check if any visible standard fields exist
     const visibleStandardFields = FIELDS.filter((f) => !removedKeys.has(f.key));
     const hasVisibleFields =
       visibleStandardFields.length > 0 || customFields.length > 0;
 
-    // Only show error if NO fields are visible at all
     if (!hasVisibleFields) {
       showStatus(
         setStatus,
@@ -134,7 +131,6 @@ export default function Popup() {
       return;
     }
 
-    // Filter valid custom fields for saving (must have labelKeyword)
     const validCustomFields = customFields.filter(
       (field) => field.labelKeyword && field.labelKeyword.trim()
     );
@@ -205,45 +201,6 @@ export default function Popup() {
     });
   };
 
-  const handleReset = () => {
-    if (typeof chrome === "undefined" || !chrome.tabs) {
-      showStatus(setStatus, "chrome extension API not available", 1600);
-      return;
-    }
-
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (!tabs || !tabs[0]) {
-        showStatus(setStatus, "no active tab found. open the form tab", 1600);
-        return;
-      }
-
-      try {
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          { action: "RESET_FORM" },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              showStatus(
-                setStatus,
-                "please reload the google form tab to reset again",
-                2000
-              );
-            } else {
-              showStatus(setStatus, "form reset successfully", 1600);
-            }
-          }
-        );
-      } catch (e) {
-        showStatus(
-          setStatus,
-          "unable to reset form. please reopen the form",
-          1600
-        );
-      }
-    });
-  };
-
-  // Load saved data on mount
   useEffect(() => {
     if (typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.sync.get(
@@ -377,7 +334,7 @@ export default function Popup() {
                           type="button"
                           onClick={() => handleCopy(`custom-${i}`, c.value)}
                           className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-                          title="Copy"
+                          title="copy"
                         >
                           {copiedField === `custom-${i}` ? <Tick /> : <Copy />}
                         </button>
@@ -385,7 +342,7 @@ export default function Popup() {
                           onClick={() => removeCustom(i)}
                           className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
                           type="button"
-                          title="Remove"
+                          title="remove"
                         >
                           <Trash />
                         </button>
@@ -411,7 +368,7 @@ export default function Popup() {
               id="addCustomBtn"
               type="button"
               onClick={() => setShowModal(true)}
-              className="text-[12px] py-2 px-3 rounded-lg border-2 border-dashed border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
+              className="text-[12px] py-2 px-3 rounded-lg border border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
             >
               <Add />
               add custom field
@@ -424,20 +381,10 @@ export default function Popup() {
               id="saveBtn"
               type="button"
               onClick={handleSave}
-              className="w-full py-2 px-2.5 rounded-lg border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#101010] text-white hover:bg-[#404040] flex items-center justify-center gap-2.5"
+              className="w-full py-3 px-2.5 rounded-lg border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#101010] text-white hover:bg-[#404040] flex items-center justify-center gap-2.5"
             >
               <Save />
               save profile
-            </button>
-
-            <button
-              id="resetBtn"
-              type="button"
-              onClick={handleReset}
-              className="w-full py-2 px-2.5 rounded-lg border border-[#dc2626] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#dc2626] hover:bg-[#fce4e4] hover:border-solid flex items-center justify-center gap-2.5"
-            >
-              <Reset />
-              reset google form
             </button>
 
             <div
