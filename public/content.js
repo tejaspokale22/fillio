@@ -1,4 +1,4 @@
-// Normalize text for matching
+// normalize text for comparison
 function normalize(text) {
   return (text || "")
     .toLowerCase()
@@ -7,31 +7,84 @@ function normalize(text) {
     .trim();
 }
 
-// Keywords mapped to stored profile keys
+// keyword-based mapping
 const FIELD_KEYWORDS = {
   email: ["email"],
-  prn: ["prn"],
-  fullName: ["full name", "name", "candidate name", "student name"],
-  dob: ["date of birth", "dob", "birth date"],
-  mobile: ["mobile", "phone", "contact number", "whatsapp"],
+  prn: ["prn", "university prn"],
+  fullName: ["full name", "candidate name", "student name"],
+  mobile: ["mobile", "phone", "contact number", "10 digits"],
+  dob: ["date of birth", "dob", "birth"],
   gender: ["gender"],
 
-  college: ["college", "institute"],
-  course: ["course", "degree"],
-  branch: ["branch", "stream", "specialization"],
-  passYear: ["year of passing", "passing year", "passout year"],
+  degree: ["degree"],
+  branch: ["specialization", "branch", "stream"],
+  college: ["college", "college name", "institute"],
 
   tenthPercent: ["10th", "ssc", "class 10"],
-  twelfthPercent: ["12th", "hsc", "class 12"],
-  diplomaPercent: ["diploma"],
-  degreePercent: ["be", "btech"],
+  twelfthPercent: ["12th", "hsc", "12th %", "diploma"],
+  diplomaPercent: ["diploma %"],
+  degreePercent: ["be%", "btech%", "degree %", "be b tech"],
 
+  passYear: ["year of graduation", "passing year", "passout"],
+
+  cocubesScore: ["cocubes"],
+
+  codechefRating: ["codechef rating"],
+  codechefLink: ["codechef profile"],
+
+  hackerrankRating: ["hackerrank rating", "hackerrank star"],
+  hackerrankLink: ["hackerrank profile"],
+
+  leetcodeScore: ["leetcode score", "problem solved"],
+  leetcodeLink: ["leetcode profile"],
+
+  hackerearthRating: ["hackerearth rating"],
+  hackerearthLink: ["hackerearth profile"],
+
+  githubLink: ["github"],
+  linkedinLink: ["linkedin"],
+
+  hasTechnicalCourse: [
+    "technical courses",
+    "technical course",
+    "certifications",
+    "course certification",
+  ],
+
+  technicalCoursePlatform: [
+    "from which agency",
+    "platform you have done",
+    "course platform",
+    "certification platform",
+    "udemy",
+    "coursera",
+  ],
+
+  technicalCourseDuration: [
+    "duration of the course",
+    "course duration",
+    "duration in hours",
+    "hours",
+  ],
+
+  cgpa: ["cgpa", "current cgpa", "aggregate cgpa", "c g p a"],
+
+  activeBacklogs: [
+    "active backlogs",
+    "current backlogs",
+    "number of backlogs",
+    "backlogs",
+    "live backlogs",
+  ],
+
+  yearDown: ["year down", "gap year"],
+
+  techAchievements: ["technical achievements"],
+  personalAchievements: ["personal achievements"],
   projects: ["project"],
-  techAchievements: ["technical achievement"],
-  personalAchievements: ["personal achievement"],
 };
 
-// Match form label to profile key
+// map label → profile key
 function getProfileKey(label) {
   const text = normalize(label);
   for (const key in FIELD_KEYWORDS) {
@@ -42,78 +95,146 @@ function getProfileKey(label) {
   return null;
 }
 
-// Fill a single question
-function fillQuestion(q, value) {
+// handle google form dropdowns
+function fillDropdown(question, value) {
+  const listbox = question.querySelector('[role="listbox"]');
+  if (!listbox) return false;
+
+  listbox.click();
+
+  const target = normalize(value);
+  const options = Array.from(document.querySelectorAll('[role="option"]'));
+
+  for (const opt of options) {
+    const text = normalize(opt.innerText || opt.textContent);
+    if (text === target || text.includes(target)) {
+      opt.click();
+      return true;
+    }
+  }
+  return false;
+}
+
+// fill a single question
+function fillQuestion(question, value) {
   if (!value) return;
 
-  const date = q.querySelector("input[type='date']");
-  const text = q.querySelector(
+  const date = question.querySelector("input[type='date']");
+  const radios = question.querySelectorAll('[role="radio"]');
+  const textarea = question.querySelector("textarea");
+  const textInput = question.querySelector(
     "input[type='text'], input[type='email'], input[type='number'], input[type='url']"
   );
-  const textarea = q.querySelector("textarea");
-  const radios = q.querySelectorAll('[role="radio"]');
 
+  // date
   if (date) {
     date.value = value;
     date.dispatchEvent(new Event("input", { bubbles: true }));
     return;
   }
 
+  // dropdown
+  if (fillDropdown(question, value)) return;
+
+  // radio buttons
   if (radios.length) {
-    const target = normalize(value);
+    const target = normalize(String(value));
+
     for (const r of radios) {
-      const label = normalize(r.getAttribute("aria-label"));
-      if (label === target || label.includes(target)) {
+      const optionText = normalize(
+        r.getAttribute("aria-label") || r.textContent
+      );
+
+      if (
+        optionText === target ||
+        optionText.includes(target) ||
+        target.includes(optionText)
+      ) {
         r.click();
         return;
       }
     }
   }
 
+  // textarea
   if (textarea) {
     textarea.value = value;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     return;
   }
 
-  if (text) {
-    text.value = value;
-    text.dispatchEvent(new Event("input", { bubbles: true }));
+  // text input
+  if (textInput) {
+    textInput.value = value;
+    textInput.dispatchEvent(new Event("input", { bubbles: true }));
   }
 }
 
-// Auto-check "record email" option
+// auto-check "record email"
 function autoCheckEmail() {
   document.querySelectorAll('[role="checkbox"]').forEach((cb) => {
-    const txt = normalize(cb.parentElement?.innerText);
-    if (txt.includes("record") && txt.includes("email")) {
+    const text = normalize(cb.parentElement?.innerText);
+    if (text.includes("record") && text.includes("email")) {
       if (cb.getAttribute("aria-checked") === "false") cb.click();
     }
   });
 }
 
-// Fill all form questions
+// autofill entire form
 function autofill(profile) {
-  document.querySelectorAll(".Qr7Oae").forEach((q) => {
-    const labelEl = q.querySelector(".M7eMe");
+  document.querySelectorAll(".Qr7Oae").forEach((question) => {
+    const labelEl = question.querySelector(".M7eMe");
     if (!labelEl) return;
 
     const key = getProfileKey(labelEl.innerText);
     if (!key || !profile[key]) return;
 
-    fillQuestion(q, profile[key]);
+    fillQuestion(question, profile[key]);
   });
 
   autoCheckEmail();
 }
 
-// Listen for popup actions
-chrome.runtime.onMessage.addListener((req, _, send) => {
+function resetGoogleForm() {
+  // reset text & textarea fields
+  document.querySelectorAll("input, textarea").forEach((el) => {
+    if (el.type === "file") return;
+
+    el.value = "";
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  // reset radio buttons
+  document
+    .querySelectorAll('[role="radio"][aria-checked="true"]')
+    .forEach((radio) => {
+      radio.click(); // real user-like toggle
+    });
+
+  // reset checkboxes (including record email)
+  document
+    .querySelectorAll('[role="checkbox"][aria-checked="true"]')
+    .forEach((checkbox) => {
+      checkbox.click(); // REQUIRED
+    });
+
+  // reset dropdowns
+  document.querySelectorAll('[role="listbox"]').forEach((listbox) => {
+    const firstOption = listbox.querySelector('[role="option"]');
+    if (firstOption) firstOption.click();
+  });
+}
+
+// listen from popup
+chrome.runtime.onMessage.addListener((req) => {
   if (req.action === "FILL_FORM") {
     chrome.storage.sync.get(["profile"], (res) => {
       autofill(res.profile || {});
-      send({ success: true });
     });
-    return true;
+  }
+
+  if (req.action === "RESET_FORM") {
+    resetGoogleForm(); // ✅
   }
 });

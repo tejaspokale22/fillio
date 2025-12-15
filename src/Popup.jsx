@@ -8,6 +8,8 @@ import Tick from "./components/Tick";
 import Modal from "./components/Modal";
 import More from "./components/More";
 import MoreModal from "./components/MoreModal";
+import Info from "./components/Info";
+import ShortcutsModal from "./components/ShortcutsModal";
 import { FIELDS } from "./constants";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
@@ -16,6 +18,7 @@ export default function Popup() {
   const [customFields, setCustomFields] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showMoreModal, setShowMoreModal] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [modalLabel, setModalLabel] = useState("");
   const [modalValue, setModalValue] = useState("");
   const [removedKeys, setRemovedKeys] = useState(new Set());
@@ -202,6 +205,17 @@ export default function Popup() {
     });
   };
 
+  const handleReset = () => {
+    if (typeof chrome === "undefined" || !chrome.tabs) return;
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs?.[0];
+      if (!tab?.url?.includes("docs.google.com/forms")) return;
+
+      chrome.tabs.sendMessage(tab.id, { action: "RESET_FORM" });
+    });
+  };
+
   useEffect(() => {
     if (typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.sync.get(
@@ -223,6 +237,7 @@ export default function Popup() {
     {
       onSave: handleSave,
       onAutofill: handleFill,
+      onReset: handleReset,
     },
     [formData, customFields, removedKeys]
   );
@@ -241,19 +256,25 @@ export default function Popup() {
               </div>
               <div className="text-[12px] text-gray-500 mb-0 w-[85%]">
                 Save your details once and reuse them across similar google
-                forms.{" "}
-                <span className="text-[10px] text-gray-500 py-0.5 rounded">
-                  <i>(ctrl + I)</i>
-                </span>
+                forms.
               </div>
             </div>
-            <button
-              onClick={() => setShowMoreModal(true)}
-              className="border-none bg-transparent text-[#0f172a] cursor-pointer p-2 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-              title="more options"
-            >
-              <More />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowShortcutsModal(true)}
+                className="border-none bg-transparent text-[#0f172a] cursor-pointer p-2 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
+                title="keyboard shortcuts"
+              >
+                <Info />
+              </button>
+              <button
+                onClick={() => setShowMoreModal(true)}
+                className="border-none bg-transparent text-[#0f172a] cursor-pointer p-2 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
+                title="more options"
+              >
+                <More />
+              </button>
+            </div>
           </div>
 
           {/* Primary action button */}
@@ -278,7 +299,7 @@ export default function Popup() {
         </div>
 
         {/* Fields list - scrollable */}
-        <div className="flex-1 overflow-y-auto px-2.5 mb-3 pb-1.5 mt-2">
+        <div className="flex-1 overflow-y-auto px-2.5 mb-3 pb-1.5 mt-3">
           {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
           customFields.length === 0 ? (
             <div className="text-center py-2 px-4">
@@ -435,6 +456,11 @@ export default function Popup() {
             fields={FIELDS}
             onImportFields={handleImportFields}
           />
+        )}
+
+        {/* shortcuts modal */}
+        {showShortcutsModal && (
+          <ShortcutsModal onClose={() => setShowShortcutsModal(false)} />
         )}
       </div>
     </div>
