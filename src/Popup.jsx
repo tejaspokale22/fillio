@@ -242,19 +242,19 @@ export default function Popup() {
           </div>
 
           {/* Primary action button */}
-          <div>
+          <div className="flex flex-col gap-2">
             <button
               id="fillBtn"
               type="button"
               onClick={handleFill}
-              className="w-full py-3 px-3 rounded-lg border-none text-[13px] font-semibold cursor-pointer bg-[#00b176] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-md border-none text-[13px] font-semibold cursor-pointer bg-[#00b176] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
             >
               <Autofill />
               autofill google form
             </button>
             <div
               id="fillStatus"
-              className="text-[13px] text-center text-[#16a34a] min-h-3.5 mt-1"
+              className="text-[12px] text-center text-[#16a34a]"
             >
               {fillStatus}
             </div>
@@ -262,7 +262,7 @@ export default function Popup() {
         </div>
 
         {/* Fields list - scrollable */}
-        <div className="flex-1 overflow-y-auto px-3 mb-3 pb-1.5 mt-3">
+        <div className="flex-1 overflow-y-auto px-2.5 mb-3 pb-1.5 mt-2">
           {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
           customFields.length === 0 ? (
             <div className="text-center py-2 px-4">
@@ -368,7 +368,7 @@ export default function Popup() {
               id="addCustomBtn"
               type="button"
               onClick={() => setShowModal(true)}
-              className="text-[12px] py-2 px-3 rounded-lg border border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
+              className="text-[12px] py-0.5 rounded-xl border border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
             >
               <Add />
               add custom field
@@ -381,16 +381,13 @@ export default function Popup() {
               id="saveBtn"
               type="button"
               onClick={handleSave}
-              className="w-full py-3 px-2.5 rounded-lg border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#101010] text-white hover:bg-[#404040] flex items-center justify-center gap-2.5"
+              className="w-full py-1.5 rounded-md border-none text-[12px] font-medium cursor-pointer transition-all duration-200 bg-[#101010] text-white hover:bg-[#404040] flex items-center justify-center gap-2.5"
             >
               <Save />
               save profile
             </button>
 
-            <div
-              id="status"
-              className="mt-1 text-[13px] text-center text-[#16a34a]"
-            >
+            <div id="status" className="text-[12px] text-center text-[#16a34a]">
               {status}
             </div>
           </div>
