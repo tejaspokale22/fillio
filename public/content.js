@@ -11,7 +11,12 @@ function normalize(text) {
 const FIELD_KEYWORDS = {
   email: ["email"],
   prn: ["prn", "university prn"],
-  fullName: ["full name", "candidate name", "student name"],
+  fullName: [
+    "full name",
+    "candidate name",
+    "student name",
+    "name of candidate",
+  ],
   mobile: ["mobile", "phone", "contact number", "10 digits"],
   dob: ["date of birth", "dob", "birth"],
   gender: ["gender"],

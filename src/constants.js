@@ -12,7 +12,7 @@ export const FIELDS = [
   { key: "passYear", label: "year of graduation" },
 
   { key: "tenthPercent", label: "10th %" },
-  { key: "twelfthPercent", label: "12th % / diploma %" },
+  { key: "twelfthPercent", label: "12th %" },
   { key: "diplomaPercent", label: "diploma %" },
   { key: "degreePercent", label: "be / btech %" },
 
