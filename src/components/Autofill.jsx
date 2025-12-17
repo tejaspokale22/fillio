@@ -2,23 +2,27 @@ export default function Autofill() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      className="bi bi-magic"
-      viewBox="0 0 16 16"
-      id="Magic--Streamline-Bootstrap"
-      height="16"
-      width="16"
-      style={{
-        display: "inline-block",
-        verticalAlign: "middle",
-        marginRight: "6px",
-      }}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#ffffff"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      id="Wand-Sparkles--Streamline-Lucide"
+      height="20"
+      width="20"
     >
-      <desc>Magic Streamline Icon: https://streamlinehq.com</desc>
+      <desc>Wand Sparkles Streamline Icon: https://streamlinehq.com</desc>
       <path
-        d="M9.5 2.672a0.5 0.5 0 1 0 1 0V0.843a0.5 0.5 0 0 0 -1 0zm4.5 0.035A0.5 0.5 0 0 0 13.293 2L12 3.293a0.5 0.5 0 1 0 0.707 0.707zM7.293 4A0.5 0.5 0 1 0 8 3.293L6.707 2A0.5 0.5 0 0 0 6 2.707zm-0.621 2.5a0.5 0.5 0 1 0 0 -1H4.843a0.5 0.5 0 1 0 0 1zm8.485 0a0.5 0.5 0 1 0 0 -1h-1.829a0.5 0.5 0 0 0 0 1zM13.293 10A0.5 0.5 0 1 0 14 9.293L12.707 8a0.5 0.5 0 1 0 -0.707 0.707zM9.5 11.157a0.5 0.5 0 0 0 1 0V9.328a0.5 0.5 0 0 0 -1 0zm1.854 -5.097a0.5 0.5 0 0 0 0 -0.706l-0.708 -0.708a0.5 0.5 0 0 0 -0.707 0L8.646 5.94a0.5 0.5 0 0 0 0 0.707l0.708 0.708a0.5 0.5 0 0 0 0.707 0l1.293 -1.293Zm-3 3a0.5 0.5 0 0 0 0 -0.706l-0.708 -0.708a0.5 0.5 0 0 0 -0.707 0L0.646 13.94a0.5 0.5 0 0 0 0 0.707l0.708 0.708a0.5 0.5 0 0 0 0.707 0z"
-        strokeWidth="1"
+        d="m21.64 3.64 -1.28 -1.28a1.21 1.21 0 0 0 -1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0 -1.72"
+        stroke-width="2"
       ></path>
+      <path d="m14 7 3 3" stroke-width="2"></path>
+      <path d="M5 6v4" stroke-width="2"></path>
+      <path d="M19 14v4" stroke-width="2"></path>
+      <path d="M10 2v2" stroke-width="2"></path>
+      <path d="M7 8H3" stroke-width="2"></path>
+      <path d="M21 16h-4" stroke-width="2"></path>
+      <path d="M11 3H9" stroke-width="2"></path>
     </svg>
   );
 }
