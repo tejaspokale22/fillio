@@ -153,6 +153,60 @@ function normalize(text) {
     .trim();
 }
 
+function isRequired(question) {
+  return (
+    question.innerText.includes("*") ||
+    question.querySelector('[aria-label*="Required"]')
+  );
+}
+
+function fillDefault(question) {
+  // radio fallback (Yes/No, 0/1, etc.)
+  const radios = question.querySelectorAll('[role="radio"]');
+  if (radios.length) {
+    for (const r of radios) {
+      const text = normalize(
+        r.getAttribute("aria-label") || r.textContent || ""
+      );
+      if (text === "no" || text === "0" || text.includes("no")) {
+        r.click();
+        return true;
+      }
+    }
+    radios[0].click(); // safest fallback
+    return true;
+  }
+
+  // dropdown fallback
+  const listbox = question.querySelector('[role="listbox"]');
+  if (listbox) {
+    listbox.click();
+    const options = question.querySelectorAll('[role="option"]');
+    if (options.length) {
+      options[0].click();
+      return true;
+    }
+  }
+
+  // text / email / number input fallback
+  const input = question.querySelector("input:not([type='file'])");
+  if (input) {
+    input.value = "NA";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  }
+
+  // textarea fallback
+  const textarea = question.querySelector("textarea");
+  if (textarea) {
+    textarea.value = "NA";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  }
+
+  return false;
+}
+
 function getProfileKey(label) {
   const text = normalize(label);
 
@@ -247,6 +301,7 @@ function fillQuestion(question, value, key) {
 
 function autofill(profile, customFields = []) {
   let filledCount = 0;
+
   document.querySelectorAll(".Qr7Oae").forEach((question) => {
     const labelEl = question.querySelector(".M7eMe");
     if (!labelEl) return;
@@ -254,12 +309,14 @@ function autofill(profile, customFields = []) {
     const label = labelEl.innerText;
     const key = getProfileKey(label);
 
+    // predefined profile match
     if (key && profile[key]) {
       fillQuestion(question, profile[key], key);
       filledCount++;
       return;
     }
 
+    // custom field match
     for (const field of customFields) {
       if (!field.value) continue;
 
@@ -269,10 +326,18 @@ function autofill(profile, customFields = []) {
       if (q.includes(f) || f.includes(q)) {
         fillQuestion(question, field.value);
         filledCount++;
-        break;
+        return;
+      }
+    }
+
+    // required fallback (no match found)
+    if (isRequired(question)) {
+      if (fillDefault(question)) {
+        filledCount++;
       }
     }
   });
+
   return filledCount;
 }
 

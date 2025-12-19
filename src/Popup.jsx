@@ -356,7 +356,7 @@ export default function Popup() {
               title="ctrl + L"
               type="button"
               onClick={handleFill}
-              className="w-full py-2 rounded-md border-none text-[13px] font-semibold cursor-pointer bg-[#00b176] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-md border-none text-[13px] font-semibold cursor-pointer bg-[#02a36e] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
             >
               <Autofill />
               autofill google form
