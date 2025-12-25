@@ -376,8 +376,13 @@ export default function Popup() {
         <div className="flex-1 overflow-y-auto px-2 pb-1.5 my-3">
           {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
           customFields.length === 0 ? (
-            <div className="text-center py-2 px-4">
-              <p className="text-[13px] text-gray-400 mb-2">
+            <div className="flex flex-col items-center justify-center py-8 px-4">
+              <img
+                src="/no-fields-available.png"
+                alt="No fields available"
+                className="w-40 h-32 mb-2"
+              />
+              <p className="text-[13px] text-gray-500 font-medium mb-1.5">
                 no fields available
               </p>
               <p className="text-[11px] text-gray-400">
@@ -409,9 +414,17 @@ export default function Popup() {
 
                 if (searchQuery && !hasResults) {
                   return (
-                    <div className="text-center py-4 px-4">
-                      <p className="text-[13px] text-gray-400">
-                        no fields found matching "{searchQuery}"
+                    <div className="flex flex-col items-center justify-center px-4 py-8">
+                      <img
+                        src="/no-search-results.png"
+                        alt="No search results"
+                        className="w-36 h-36"
+                      />
+                      <p className="text-[13px] text-gray-500 font-medium mb-1">
+                        no results found
+                      </p>
+                      <p className="text-[11px] text-gray-400">
+                        no fields matching "{searchQuery}"
                       </p>
                     </div>
                   );
