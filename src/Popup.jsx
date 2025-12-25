@@ -461,25 +461,14 @@ export default function Popup() {
                             </div>
                           </div>
 
-                          {f.textarea ? (
-                            <textarea
-                              id={f.key}
-                              value={formData[f.key] || ""}
-                              onChange={(e) =>
-                                handleChange(f.key, e.target.value)
-                              }
-                              className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] resize-y min-h-[50px] focus:border-[#0f172a] focus:bg-white"
-                            />
-                          ) : (
-                            <input
-                              id={f.key}
-                              value={formData[f.key] || ""}
-                              onChange={(e) =>
-                                handleChange(f.key, e.target.value)
-                              }
-                              className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
-                            />
-                          )}
+                          <input
+                            id={f.key}
+                            value={formData[f.key] || ""}
+                            onChange={(e) =>
+                              handleChange(f.key, e.target.value)
+                            }
+                            className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
+                          />
                         </div>
                       ) : null
                     )}

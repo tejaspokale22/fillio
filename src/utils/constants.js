@@ -56,12 +56,11 @@ export const FIELDS = [
   },
   { key: "yearDown", label: "year down (yes/no)" },
 
-  { key: "technologies", label: "technologies / skills", textarea: true },
-  { key: "projects", label: "projects", textarea: true },
-  { key: "techAchievements", label: "technical achievements", textarea: true },
+  { key: "technologies", label: "technologies / skills" },
+  { key: "projects", label: "projects" },
+  { key: "techAchievements", label: "technical achievements" },
   {
     key: "personalAchievements",
     label: "personal achievements",
-    textarea: true,
   },
 ];
