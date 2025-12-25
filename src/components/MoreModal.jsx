@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ExportJSON from "./options/ExportJSON";
-import ExportPDF from "./options/ExportPDF";
-import ImportJSON from "./options/ImportJSON";
+import ExportJSON from "./more/ExportJSON";
+import ExportPDF from "./more/ExportPDF";
+import ImportJSON from "./more/ImportJSON";
 
 export default function MoreModal({
   onClose,

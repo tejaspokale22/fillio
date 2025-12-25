@@ -8,7 +8,7 @@ export const FIELDS = [
 
   { key: "college", label: "college name" },
   { key: "degree", label: "degree (BE/BTech/BSc/BCA)" },
-  { key: "branch", label: "specialization / branch (CSE/IT/ECE/Mech)" },
+  { key: "branch", label: "branch (CSE/IT/ECE/Mech)" },
   { key: "passYear", label: "year of graduation (2026/2027)" },
 
   { key: "tenthPercent", label: "10th %" },
@@ -39,11 +39,11 @@ export const FIELDS = [
   },
   {
     key: "technicalCoursePlatform",
-    label: "course platform / agency",
+    label: "course platform",
   },
   {
     key: "technicalCourseDuration",
-    label: "course duration (hours)",
+    label: "course duration (hrs)",
   },
   {
     key: "cgpa",
@@ -52,7 +52,7 @@ export const FIELDS = [
 
   {
     key: "activeBacklogs",
-    label: "active backlogs (0/1/2)",
+    label: "active backlogs (in number)",
   },
   { key: "yearDown", label: "year down (yes/no)" },
 

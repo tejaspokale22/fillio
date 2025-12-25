@@ -10,7 +10,8 @@ import More from "./components/More";
 import MoreModal from "./components/MoreModal";
 import Info from "./components/Info";
 import ShortcutsModal from "./components/ShortcutsModal";
-import { FIELDS } from "./constants";
+import Search from "./components/Search";
+import { FIELDS } from "./utils/constants";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 export default function Popup() {
@@ -26,6 +27,7 @@ export default function Popup() {
   const [status, setStatus] = useState("");
   const [modalError, setModalError] = useState("");
   const [copiedField, setCopiedField] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleChange = (key, value) =>
     setFormData((p) => ({ ...p, [key]: value }));
@@ -61,7 +63,7 @@ export default function Popup() {
     const value = modalValue.trim();
 
     if (!labelKeyword) {
-      setModalError("please enter the field label");
+      setModalError("field label cannot be empty");
       return;
     }
 
@@ -315,7 +317,7 @@ export default function Popup() {
   );
 
   return (
-    <div className="m-2 bg-white border border-black rounded-md overflow-hidden h-[570px]">
+    <div className="m-2 bg-white border border-black rounded-md overflow-hidden h-[580px]">
       <div className="w-[380px] flex flex-col h-full">
         {/* Header */}
         <div className="p-3 border-b border-black shrink-0 bg-black/5">
@@ -371,7 +373,7 @@ export default function Popup() {
         </div>
 
         {/* Fields list - scrollable */}
-        <div className="flex-1 overflow-y-auto px-2.5 mb-3 pb-1.5 mt-3">
+        <div className="flex-1 overflow-y-auto px-2 pb-1.5 my-3">
           {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
           customFields.length === 0 ? (
             <div className="text-center py-2 px-4">
@@ -384,87 +386,144 @@ export default function Popup() {
             </div>
           ) : (
             <>
-              {FIELDS.map((f) =>
-                !removedKeys.has(f.key) ? (
-                  <div key={f.key} className="mb-2.5">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <label className="text-[11px] text-[#0f172a] m-0">
-                        {f.label}
-                      </label>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(f.key, formData[f.key])}
-                          className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-                          title="copy"
-                        >
-                          {copiedField === f.key ? <Tick /> : <Copy />}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveField(f.key)}
-                          className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
-                          title="remove"
-                        >
-                          <Trash />
-                        </button>
-                      </div>
-                    </div>
+              {/* Search component */}
+              <Search
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
 
-                    {f.textarea ? (
-                      <textarea
-                        id={f.key}
-                        value={formData[f.key] || ""}
-                        onChange={(e) => handleChange(f.key, e.target.value)}
-                        className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] resize-y min-h-[50px] focus:border-[#0f172a] focus:bg-white"
-                      />
-                    ) : (
-                      <input
-                        id={f.key}
-                        value={formData[f.key] || ""}
-                        onChange={(e) => handleChange(f.key, e.target.value)}
-                        className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
-                      />
+              {(() => {
+                const filteredStandardFields = FIELDS.filter(
+                  (f) =>
+                    !removedKeys.has(f.key) &&
+                    f.label.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                const filteredCustomFields = customFields.filter((c) =>
+                  c.labelKeyword
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+                );
+                const hasResults =
+                  filteredStandardFields.length > 0 ||
+                  filteredCustomFields.length > 0;
+
+                if (searchQuery && !hasResults) {
+                  return (
+                    <div className="text-center py-4 px-4">
+                      <p className="text-[13px] text-gray-400">
+                        no fields found matching "{searchQuery}"
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <>
+                    {filteredStandardFields.map((f) =>
+                      !removedKeys.has(f.key) ? (
+                        <div key={f.key} className="mb-3">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <label className="text-[11px] text-[#0f172a] m-0">
+                              {f.label}
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleCopy(f.key, formData[f.key])
+                                }
+                                className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
+                                title="copy"
+                              >
+                                {copiedField === f.key ? <Tick /> : <Copy />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveField(f.key)}
+                                className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
+                                title="remove"
+                              >
+                                <Trash />
+                              </button>
+                            </div>
+                          </div>
+
+                          {f.textarea ? (
+                            <textarea
+                              id={f.key}
+                              value={formData[f.key] || ""}
+                              onChange={(e) =>
+                                handleChange(f.key, e.target.value)
+                              }
+                              className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] resize-y min-h-[50px] focus:border-[#0f172a] focus:bg-white"
+                            />
+                          ) : (
+                            <input
+                              id={f.key}
+                              value={formData[f.key] || ""}
+                              onChange={(e) =>
+                                handleChange(f.key, e.target.value)
+                              }
+                              className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
+                            />
+                          )}
+                        </div>
+                      ) : null
                     )}
-                  </div>
-                ) : null
-              )}
 
-              {/* custom fields */}
-              <div id="customList">
-                {customFields.map((c, i) => (
-                  <div key={i} className="mb-2.5">
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-[11px] text-[#0f172a] m-0">
-                        {c.labelKeyword}
-                      </label>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(`custom-${i}`, c.value)}
-                          className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-                          title="copy"
-                        >
-                          {copiedField === `custom-${i}` ? <Tick /> : <Copy />}
-                        </button>
-                        <button
-                          onClick={() => removeCustom(i)}
-                          className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
-                          type="button"
-                          title="remove"
-                        >
-                          <Trash />
-                        </button>
-                      </div>
+                    {/* custom fields */}
+                    <div id="customList">
+                      {filteredCustomFields.map((c, i) => {
+                        const originalIndex = customFields.findIndex(
+                          (field) =>
+                            field.labelKeyword === c.labelKeyword &&
+                            field.value === c.value
+                        );
+                        return (
+                          <div key={i} className="mb-2.5">
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[11px] text-[#0f172a] m-0">
+                                {c.labelKeyword}
+                              </label>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleCopy(`custom-${i}`, c.value)
+                                  }
+                                  className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
+                                  title="copy"
+                                >
+                                  {copiedField === `custom-${i}` ? (
+                                    <Tick />
+                                  ) : (
+                                    <Copy />
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => removeCustom(originalIndex)}
+                                  className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
+                                  type="button"
+                                  title="remove"
+                                >
+                                  <Trash />
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              value={c.value}
+                              onChange={(e) =>
+                                updateCustomField(originalIndex, e.target.value)
+                              }
+                              className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
-                    <input
-                      value={c.value}
-                      onChange={(e) => updateCustomField(i, e.target.value)}
-                      className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
-                    />
-                  </div>
-                ))}
-              </div>
+                  </>
+                );
+              })()}
             </>
           )}
         </div>
