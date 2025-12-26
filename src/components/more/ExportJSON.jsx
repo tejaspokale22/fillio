@@ -1,6 +1,9 @@
+import { useState } from "react";
 import JSONIcon from "../JSON";
 
 export default function ExportJSON({ formData, customFields, fields }) {
+  const [error, setError] = useState("");
+
   const exportAsJSON = () => {
     // Filter out empty fields
     const filledData = {};
@@ -24,9 +27,13 @@ export default function ExportJSON({ formData, customFields, fields }) {
 
     // Check if there's any data to export
     if (Object.keys(filledData).length === 0) {
-      alert("No data to export. Please fill in some fields first.");
+      setError("no data to export. please fill in some fields first.");
+      setTimeout(() => setError(""), 1600);
       return;
     }
+
+    // Clear any previous errors
+    setError("");
 
     // Create formatted JSON with metadata
     const exportData = filledData;
@@ -47,12 +54,15 @@ export default function ExportJSON({ formData, customFields, fields }) {
   };
 
   return (
-    <button
-      onClick={exportAsJSON}
-      className="w-full py-2.5 px-3 rounded-lg border border-[#e2e8f0] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center justify-start gap-2.5"
-    >
-      <JSONIcon />
-      export as JSON
-    </button>
+    <>
+      <button
+        onClick={exportAsJSON}
+        className="w-full py-2.5 px-3 rounded-lg border border-[#e2e8f0] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center justify-start gap-2.5"
+      >
+        <JSONIcon />
+        export as JSON
+      </button>
+      {error && <div className="text-[11px] text-[#dc2626] mt-1">{error}</div>}
+    </>
   );
 }

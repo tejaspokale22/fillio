@@ -13,7 +13,7 @@ export default function ImportJSON({ onImport }) {
 
   const showError = (message) => {
     setErrorMessage(message);
-    setTimeout(() => setErrorMessage(""), 3000);
+    setTimeout(() => setErrorMessage(""), 1600);
   };
 
   const handleFileChange = async (event) => {

@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { jsPDF } from "jspdf";
 import PDF from "../PDF";
 
 export default function ExportPDF({ formData, customFields, fields }) {
+  const [error, setError] = useState("");
+
   const generatePDF = () => {
     // Filter out empty fields
     const filledFields = [];
@@ -25,9 +28,13 @@ export default function ExportPDF({ formData, customFields, fields }) {
 
     // Check if there's any data to export
     if (filledFields.length === 0) {
-      alert("No data to export. Please fill in some fields first.");
+      setError("no data to export. please fill in some fields first.");
+      setTimeout(() => setError(""), 1600);
       return;
     }
+
+    // Clear any previous errors
+    setError("");
 
     // Create PDF
     const doc = new jsPDF();
@@ -122,12 +129,15 @@ export default function ExportPDF({ formData, customFields, fields }) {
   };
 
   return (
-    <button
-      onClick={generatePDF}
-      className="w-full py-2.5 px-3 rounded-lg border border-[#e2e8f0] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center justify-start gap-2.5"
-    >
-      <PDF />
-      export as PDF
-    </button>
+    <>
+      <button
+        onClick={generatePDF}
+        className="w-full py-2.5 px-3 rounded-lg border border-[#e2e8f0] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center justify-start gap-2.5"
+      >
+        <PDF />
+        export as PDF
+      </button>
+      {error && <div className="text-[11px] text-[#dc2626] mt-1">{error}</div>}
+    </>
   );
 }
