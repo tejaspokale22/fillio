@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Autofill Google Forms",
   "version": "1.3.0",
-  "description": "a chrome extension to autofill repetitive google forms.",
+  "description": "A chrome extension to autofill repetitive google forms.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["https://docs.google.com/forms/*"],
   "action": {
