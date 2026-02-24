@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Autofill Google Forms",
+  "name": "Fillio - Autofill google forms",
   "version": "1.3.0",
-  "description": "A chrome extension to autofill repetitive google forms.",
+  "description": "An edge extension to autofill repetitive google forms in seconds.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["https://docs.google.com/forms/*"],
   "action": {
     "default_popup": "index.html",
-    "default_title": "Google Form Autofill"
+    "default_title": "Fillio - Autofill google forms"
   },
   "icons": {
     "16": "icon16.png",
@@ -27,7 +27,7 @@
         "default": "Ctrl+Shift+F",
         "mac": "Command+Shift+F"
       },
-      "description": "Open Autofill Google Forms extension"
+      "description": "Open Fillio - Autofill google forms extension"
     }
   }
 }

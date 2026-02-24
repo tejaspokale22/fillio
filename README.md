@@ -1,4 +1,4 @@
-# Fillio - Autofill Google Forms in seconds
+# Fillio - Autofill google forms in seconds
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Stars](https://img.shields.io/github/stars/tejaspokale22/google-form-autofill?style=social)](https://github.com/tejaspokale22/google-form-autofill/stargazers)

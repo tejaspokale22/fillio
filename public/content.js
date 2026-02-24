@@ -166,7 +166,7 @@ function fillDefault(question) {
   if (radios.length) {
     for (const r of radios) {
       const text = normalize(
-        r.getAttribute("aria-label") || r.textContent || ""
+        r.getAttribute("aria-label") || r.textContent || "",
       );
       if (text === "no" || text === "0" || text.includes("no")) {
         r.click();
@@ -275,7 +275,7 @@ function fillQuestion(question, value, key) {
     const target = normalize(value);
     for (const radio of radios) {
       const text = normalize(
-        radio.getAttribute("aria-label") || radio.textContent
+        radio.getAttribute("aria-label") || radio.textContent,
       );
       if (text === target || text.includes(target) || target.includes(text)) {
         radio.click();
@@ -358,13 +358,13 @@ function resetGoogleForm() {
     .forEach((c) => c.click());
 }
 
-chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "FILL_FORM") {
     chrome.storage.sync.get(["profile", "customFields"], (result) => {
       try {
         const filledCount = autofill(
           result.profile || {},
-          result.customFields || []
+          result.customFields || [],
         );
         sendResponse({ success: true, filledCount });
       } catch (e) {

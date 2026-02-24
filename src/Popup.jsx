@@ -140,8 +140,8 @@ export default function Popup() {
         prev.map((field, idx) =>
           customFieldUpdates.has(idx)
             ? { ...field, value: customFieldUpdates.get(idx) }
-            : field
-        )
+            : field,
+        ),
       );
     }
 
@@ -158,7 +158,7 @@ export default function Popup() {
 
   const updateCustomField = (index, value) => {
     setCustomFields((prev) =>
-      prev.map((field, idx) => (idx === index ? { ...field, value } : field))
+      prev.map((field, idx) => (idx === index ? { ...field, value } : field)),
     );
   };
 
@@ -188,13 +188,13 @@ export default function Popup() {
       showStatus(
         setStatus,
         "please add at least one field before saving",
-        1600
+        1600,
       );
       return;
     }
 
     const validCustomFields = customFields.filter(
-      (field) => field.labelKeyword && field.labelKeyword.trim()
+      (field) => field.labelKeyword && field.labelKeyword.trim(),
     );
 
     if (typeof chrome !== "undefined" && chrome.storage) {
@@ -205,7 +205,7 @@ export default function Popup() {
             customFields: validCustomFields,
             hiddenStandardFields: res.hiddenStandardFields || [],
           },
-          () => showStatus(setStatus, "saved ✅", 1600)
+          () => showStatus(setStatus, "saved ✅", 1600),
         );
       });
     } else {
@@ -224,7 +224,7 @@ export default function Popup() {
         showStatus(
           setFillStatus,
           "no active tab found. open the google form tab",
-          1600
+          1600,
         );
         return;
       }
@@ -248,12 +248,12 @@ export default function Popup() {
                   showStatus(
                     setFillStatus,
                     "failed to load. please refresh the page",
-                    1600
+                    1600,
                   );
                 } else {
                   setTimeout(() => sendFillMessage(), 100);
                 }
-              }
+              },
             );
           } else if (response && !response.success) {
             showStatus(setFillStatus, response.message, 1600);
@@ -261,7 +261,7 @@ export default function Popup() {
             showStatus(
               setFillStatus,
               `filled ${response.filledCount} field(s) successfully`,
-              1600
+              1600,
             );
           }
         });
@@ -273,7 +273,7 @@ export default function Popup() {
         showStatus(
           setFillStatus,
           "unable to trigger fill. please reopen the form",
-          1600
+          1600,
         );
       }
     });
@@ -301,7 +301,7 @@ export default function Popup() {
           setFormData(profile);
           setCustomFields(result.customFields || []);
           setRemovedKeys(new Set(hiddenStandardFields));
-        }
+        },
       );
     }
   }, []);
@@ -313,19 +313,19 @@ export default function Popup() {
       onAutofill: handleFill,
       onReset: handleReset,
     },
-    [formData, customFields, removedKeys]
+    [formData, customFields, removedKeys],
   );
 
   return (
-    <div className="m-2 bg-white border border-black rounded-md overflow-hidden h-[580px]">
-      <div className="w-[380px] flex flex-col h-full">
+    <div className="m-2 bg-white border border-black rounded-md overflow-hidden h-[580px] w-[380px]">
+      <div className="flex flex-col h-full">
         {/* Header */}
         <div className="p-3 border-b border-black shrink-0 bg-black/5">
           <div className="flex items-center justify-between mb-2">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <h1 className="text-[20px] font-semibold m-0 text-[#0f172a]">
-                  Autofill Google Forms{" "}
+                <h1 className="text-[19px] font-semibold m-0 text-[#0f172a]">
+                  Fillio - Autofill google forms
                 </h1>
               </div>
               <div className="text-[12px] text-gray-500 mb-0 w-[85%]">
@@ -401,12 +401,12 @@ export default function Popup() {
                 const filteredStandardFields = FIELDS.filter(
                   (f) =>
                     !removedKeys.has(f.key) &&
-                    f.label.toLowerCase().includes(searchQuery.toLowerCase())
+                    f.label.toLowerCase().includes(searchQuery.toLowerCase()),
                 );
                 const filteredCustomFields = customFields.filter((c) =>
                   c.labelKeyword
                     .toLowerCase()
-                    .includes(searchQuery.toLowerCase())
+                    .includes(searchQuery.toLowerCase()),
                 );
                 const hasResults =
                   filteredStandardFields.length > 0 ||
@@ -470,7 +470,7 @@ export default function Popup() {
                             className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
                           />
                         </div>
-                      ) : null
+                      ) : null,
                     )}
 
                     {/* custom fields */}
@@ -479,7 +479,7 @@ export default function Popup() {
                         const originalIndex = customFields.findIndex(
                           (field) =>
                             field.labelKeyword === c.labelKeyword &&
-                            field.value === c.value
+                            field.value === c.value,
                         );
                         return (
                           <div key={i} className="mb-2.5">
