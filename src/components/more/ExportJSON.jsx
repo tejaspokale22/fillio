@@ -62,7 +62,11 @@ export default function ExportJSON({ formData, customFields, fields }) {
         <JSONIcon />
         export as JSON
       </button>
-      {error && <div className="text-[11px] text-[#dc2626] mt-1">{error}</div>}
+      {error && (
+        <div className="text-[11px] text-[#dc2626] mt-1 text-center">
+          {error}
+        </div>
+      )}
     </>
   );
 }

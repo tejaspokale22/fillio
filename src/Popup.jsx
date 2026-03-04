@@ -63,7 +63,7 @@ export default function Popup() {
     const value = modalValue.trim();
 
     if (!labelKeyword) {
-      setModalError("field label cannot be empty");
+      setModalError("field label cannot be empty.");
       return;
     }
 
@@ -187,7 +187,7 @@ export default function Popup() {
     if (!hasVisibleFields) {
       showStatus(
         setStatus,
-        "please add at least one field before saving",
+        "please add at least one field before saving.",
         1600,
       );
       return;
@@ -209,13 +209,13 @@ export default function Popup() {
         );
       });
     } else {
-      showStatus(setStatus, "chrome extension API not available", 1600);
+      showStatus(setStatus, "chrome extension API not available.", 1600);
     }
   };
 
   const handleFill = () => {
     if (typeof chrome === "undefined" || !chrome.tabs) {
-      showStatus(setFillStatus, "chrome extension API not available", 1600);
+      showStatus(setFillStatus, "chrome extension API not available.", 1600);
       return;
     }
 
@@ -223,7 +223,7 @@ export default function Popup() {
       if (!tabs || !tabs[0]) {
         showStatus(
           setFillStatus,
-          "no active tab found. open the google form tab",
+          "no active tab found. open the google form tab first.",
           1600,
         );
         return;
@@ -231,7 +231,7 @@ export default function Popup() {
 
       const tab = tabs[0];
       if (!tab.url || !tab.url.includes("docs.google.com/forms")) {
-        showStatus(setFillStatus, "please open a google form tab first", 1600);
+        showStatus(setFillStatus, "please open a google form tab first.", 1600);
         return;
       }
 
@@ -247,7 +247,7 @@ export default function Popup() {
                 if (chrome.runtime.lastError) {
                   showStatus(
                     setFillStatus,
-                    "failed to load. please refresh the page",
+                    "failed to load. please refresh the page.",
                     1600,
                   );
                 } else {
@@ -272,7 +272,7 @@ export default function Popup() {
       } catch (e) {
         showStatus(
           setFillStatus,
-          "unable to trigger fill. please reopen the form",
+          "unable to trigger fill. please reopen the form.",
           1600,
         );
       }
@@ -373,7 +373,7 @@ export default function Popup() {
         </div>
 
         {/* Fields list - scrollable */}
-        <div className="flex-1 overflow-y-auto px-2 pb-1.5 my-3">
+        <div className="flex-1 overflow-y-auto px-2.5 pb-1.5 my-3">
           {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
           customFields.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">

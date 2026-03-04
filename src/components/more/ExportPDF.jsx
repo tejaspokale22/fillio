@@ -137,7 +137,7 @@ export default function ExportPDF({ formData, customFields, fields }) {
         <PDF />
         export as PDF
       </button>
-      {error && <div className="text-[11px] text-[#dc2626] mt-1">{error}</div>}
+      {error && <div className="text-[11px] text-[#dc2626] mt-1 text-center">{error}</div>}
     </>
   );
 }

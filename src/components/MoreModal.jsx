@@ -2,6 +2,7 @@ import { useState } from "react";
 import ExportJSON from "./more/ExportJSON";
 import ExportPDF from "./more/ExportPDF";
 import ImportJSON from "./more/ImportJSON";
+import ResetGoogleForm from "./more/ResetGoogleForm";
 
 export default function MoreModal({
   onClose,
@@ -53,6 +54,7 @@ export default function MoreModal({
             fields={fields}
           />
           <ImportJSON onImport={handleImport} />
+          <ResetGoogleForm />
           {importStatus && (
             <div className="text-[12px] text-[#16a34a] text-center py-1">
               {importStatus}

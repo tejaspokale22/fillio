@@ -145,6 +145,7 @@ const FIELD_KEYWORDS = {
   projects: ["project"],
 };
 
+// normalize text for matching
 function normalize(text) {
   return (text || "")
     .toLowerCase()
@@ -153,6 +154,7 @@ function normalize(text) {
     .trim();
 }
 
+// check if question is required
 function isRequired(question) {
   return (
     question.innerText.includes("*") ||
@@ -160,8 +162,46 @@ function isRequired(question) {
   );
 }
 
+// fill top collect-email field
+function fillTopEmail(profile) {
+  if (!profile?.email) return false;
+
+  // case 1: special google checkbox
+  const emailCheckbox = document.querySelector(
+    'div[role="checkbox"][aria-label*="email"]',
+  );
+
+  if (emailCheckbox) {
+    const isChecked = emailCheckbox.getAttribute("aria-checked") === "true";
+    if (!isChecked) {
+      emailCheckbox.click();
+    }
+    return true;
+  }
+
+  // case 2: normal input based email field
+  const emailInput =
+    document.querySelector("input[type='email']") ||
+    document.querySelector("input[autocomplete='email']") ||
+    document.querySelector('input[aria-label*="Email"]');
+
+  if (!emailInput) return false;
+
+  const nativeSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    "value",
+  ).set;
+
+  nativeSetter.call(emailInput, profile.email);
+
+  emailInput.dispatchEvent(new Event("input", { bubbles: true }));
+  emailInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+  return true;
+}
+
+// default fallback filler
 function fillDefault(question) {
-  // radio fallback (Yes/No, 0/1, etc.)
   const radios = question.querySelectorAll('[role="radio"]');
   if (radios.length) {
     for (const r of radios) {
@@ -173,11 +213,10 @@ function fillDefault(question) {
         return true;
       }
     }
-    radios[0].click(); // safest fallback
+    radios[0].click();
     return true;
   }
 
-  // dropdown fallback
   const listbox = question.querySelector('[role="listbox"]');
   if (listbox) {
     listbox.click();
@@ -188,7 +227,6 @@ function fillDefault(question) {
     }
   }
 
-  // text / email / number input fallback
   const input = question.querySelector("input:not([type='file'])");
   if (input) {
     input.value = "NA";
@@ -196,7 +234,6 @@ function fillDefault(question) {
     return true;
   }
 
-  // textarea fallback
   const textarea = question.querySelector("textarea");
   if (textarea) {
     textarea.value = "NA";
@@ -207,9 +244,9 @@ function fillDefault(question) {
   return false;
 }
 
+// detect best matching profile key
 function getProfileKey(label) {
   const text = normalize(label);
-
   let bestMatch = null;
   let longestMatchLength = 0;
 
@@ -229,6 +266,7 @@ function getProfileKey(label) {
   return bestMatch;
 }
 
+// fill dropdown
 function fillDropdown(question, value) {
   const listbox = question.querySelector('[role="listbox"]');
   if (!listbox) return false;
@@ -245,9 +283,11 @@ function fillDropdown(question, value) {
       return true;
     }
   }
+
   return false;
 }
 
+// fill a question
 function fillQuestion(question, value, key) {
   if (!value) return;
 
@@ -292,15 +332,20 @@ function fillQuestion(question, value, key) {
   }
 
   const input = question.querySelector("input:not([type='file'])");
-
   if (input) {
     input.value = value;
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }
 }
 
+// main autofill logic
 function autofill(profile, customFields = []) {
   let filledCount = 0;
+
+  // fill collect email first
+  if (fillTopEmail(profile)) {
+    filledCount++;
+  }
 
   document.querySelectorAll(".Qr7Oae").forEach((question) => {
     const labelEl = question.querySelector(".M7eMe");
@@ -309,14 +354,12 @@ function autofill(profile, customFields = []) {
     const label = labelEl.innerText;
     const key = getProfileKey(label);
 
-    // predefined profile match
     if (key && profile[key]) {
       fillQuestion(question, profile[key], key);
       filledCount++;
       return;
     }
 
-    // custom field match
     for (const field of customFields) {
       if (!field.value) continue;
 
@@ -330,7 +373,6 @@ function autofill(profile, customFields = []) {
       }
     }
 
-    // required fallback (no match found)
     if (isRequired(question)) {
       if (fillDefault(question)) {
         filledCount++;
@@ -341,24 +383,14 @@ function autofill(profile, customFields = []) {
   return filledCount;
 }
 
+// clear google form
 function resetGoogleForm() {
-  document.querySelectorAll("input, textarea").forEach((el) => {
-    if (el.type === "file") return;
-    el.value = "";
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-    el.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-
-  document
-    .querySelectorAll('[role="radio"][aria-checked="true"]')
-    .forEach((r) => r.click());
-
-  document
-    .querySelectorAll('[role="checkbox"][aria-checked="true"]')
-    .forEach((c) => c.click());
+  const clearBtn = document.querySelector('div[jsname="X5DuWc"]');
+  if (clearBtn) clearBtn.click();
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+// message listener
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === "FILL_FORM") {
     chrome.storage.sync.get(["profile", "customFields"], (result) => {
       try {

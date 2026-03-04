@@ -20,6 +20,7 @@ export function useKeyboardShortcuts(handlers, deps = []) {
       if (key === "r") {
         e.preventDefault();
         handlers.onReset?.();
+        window.close();
       }
     }
 
