@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
       // call AI only for labels not in cache
       if (unknownLabels.length > 0) {
-        const res = await fetch("http://localhost:3000/api/match", {
+        const res = await fetch("https://fillio-server.vercel.app/api/match", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
