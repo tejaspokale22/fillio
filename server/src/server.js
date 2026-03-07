@@ -9,7 +9,7 @@ const app = express();
 
 // ----- CORS configuration -----
 const allowedOrigins = [
-  "chrome-extension://mkolfkanacdfeajknnojemhkljbalced",
+  "chrome-extension://cbgcaaalkjkegcpidljbhjemoopimoff",
   "http://localhost:5173",
 ];
 
