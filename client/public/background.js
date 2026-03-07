@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
       // check cache first
       for (const label of formLabels) {
-        if (cache[label] !== undefined) {
+        if (label in cache) {
           mapping[label] = cache[label];
         } else {
           unknownLabels.push(label);
@@ -62,8 +62,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
           mapping[label] = key;
 
-          // update cache
-          cache[label] = key;
+          // cache ONLY if key is not null
+          if (key !== null) {
+            cache[label] = key;
+          }
         }
 
         // save updated cache
@@ -73,7 +75,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ mapping });
     } catch (error) {
       console.error("Fillio AI request failed:", error);
-
       sendResponse({ mapping: {} });
     }
   }
