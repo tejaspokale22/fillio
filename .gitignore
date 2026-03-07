@@ -1,4 +1,4 @@
-# Logs
+// Logs
 logs
 *.log
 npm-debug.log*
@@ -7,19 +7,51 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+// Dependencies
+node_modules/
+
+// Build / Distribution
 dist
-dist.zip
 dist-ssr
+dist.zip
+build
+out
+
+// Environment variables
+.env
+.env.*
 *.local
 
-# Editor directories and files
+// Runtime / Temporary files
+tmp
+temp
+.cache
+*.pid
+*.seed
+
+// Server generated files
+uploads
+storage
+public/uploads
+
+// Testing / Coverage
+coverage
+.nyc_output
+
+// Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+
+// OS files
+.DS_Store
+Thumbs.db
+
+// Temporary / swap files
+*.swp
+*.swo
 *.sw?

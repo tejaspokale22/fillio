@@ -284,9 +284,24 @@ export default function Popup() {
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs?.[0];
+
       if (!tab?.url?.includes("docs.google.com/forms")) return;
 
-      chrome.tabs.sendMessage(tab.id, { action: "RESET_FORM" });
+      chrome.tabs.sendMessage(tab.id, { action: "RESET_FORM" }, (response) => {
+        if (chrome.runtime.lastError) {
+          chrome.scripting.executeScript(
+            {
+              target: { tabId: tab.id },
+              files: ["content.js"],
+            },
+            () => {
+              chrome.tabs.sendMessage(tab.id, { action: "RESET_FORM" });
+            },
+          );
+
+          return;
+        }
+      });
     });
   };
 

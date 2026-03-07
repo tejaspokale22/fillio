@@ -58,7 +58,7 @@ export const FIELDS = [
 
   { key: "technologies", label: "technologies / skills" },
   { key: "projects", label: "projects" },
-  { key: "techAchievements", label: "technical achievements" },
+  { key: "technicalAchievements", label: "technical achievements" },
   {
     key: "personalAchievements",
     label: "personal achievements",
