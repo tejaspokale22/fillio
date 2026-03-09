@@ -11,7 +11,7 @@ export default function ShortcutsModal({ onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-[16px] font-semibold text-[#0f172a]">
-            keyboard shortcuts
+            Keyboard shortcuts
           </h2>
           <button
             onClick={onClose}
@@ -33,7 +33,9 @@ export default function ShortcutsModal({ onClose }) {
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-gray-600">autofill form</span>
+              <span className="text-[13px] text-gray-600">
+                autofill google form
+              </span>
               <kbd className="px-2 py-1 text-[11px] font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded">
                 ctrl + L
               </kbd>
@@ -54,15 +56,6 @@ export default function ShortcutsModal({ onClose }) {
                 ctrl + R
               </kbd>
             </div>
-          </div>
-
-          {/* Note */}
-          <div className="mt-4 pt-3 border-t border-gray-200">
-            <p className="text-[11px] text-gray-500">
-              mac users: use{" "}
-              <kbd className="text-[10px] font-semibold">cmd</kbd> instead of{" "}
-              <kbd className="text-[10px] font-semibold">ctrl</kbd>
-            </p>
           </div>
         </div>
       </div>

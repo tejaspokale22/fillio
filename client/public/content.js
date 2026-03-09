@@ -25,7 +25,7 @@ function isRequired(question) {
   );
 }
 
-// fill top collect-email field
+// check top email field
 function fillTopEmail(profile) {
   if (!profile?.email) return false;
 
@@ -104,6 +104,7 @@ function fillTopEmail(profile) {
 // }
 
 // fill dropdown
+
 function fillDropdown(question, value) {
   const listbox = question.querySelector('[role="listbox"]');
   if (!listbox) return false;
@@ -190,7 +191,7 @@ function extractLabels() {
 }
 
 // autofill using AI mapping
-function autofill(profile, customFields = [], mapping = {}) {
+function autofill(profile, mapping = {}) {
   let filledCount = 0;
 
   if (fillTopEmail(profile)) filledCount++;
@@ -208,23 +209,18 @@ function autofill(profile, customFields = [], mapping = {}) {
       return;
     }
 
-    // fallback for custom fields
-    for (const field of customFields) {
-      if (!field.value) continue;
+    for (const [fieldLabel, value] of Object.entries(profile)) {
+      if (!value) continue;
 
       const q = normalize(label);
-      const f = normalize(field.labelKeyword);
+      const f = normalize(fieldLabel);
 
       if (q.includes(f) || f.includes(q)) {
-        fillQuestion(question, field.value);
+        fillQuestion(question, value);
         filledCount++;
         return;
       }
     }
-
-    // if (isRequired(question)) {
-    //   if (fillDefault(question)) filledCount++;
-    // }
   });
 
   return filledCount;
@@ -239,22 +235,18 @@ function resetGoogleForm() {
 // message listener
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === "FILL_FORM") {
-    chrome.storage.sync.get(["profile", "customFields"], (result) => {
+    chrome.storage.sync.get(["profile"], (result) => {
       const profile = result.profile || {};
-      const customFields = result.customFields || [];
 
       try {
         const labels = extractLabels();
 
-        const allProfileKeys = [
-          ...Object.keys(profile),
-          ...customFields.map((f) => f.key || f.labelKeyword).filter(Boolean),
-        ];
+        const profileKeys = Object.keys(profile);
 
         chrome.runtime.sendMessage(
           {
             type: "MATCH_LABELS",
-            profileKeys: allProfileKeys,
+            profileKeys,
             formLabels: labels,
           },
           (response) => {
@@ -269,7 +261,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 
             const mapping = response?.mapping || {};
 
-            const filledCount = autofill(profile, customFields, mapping);
+            const filledCount = autofill(profile, mapping);
 
             sendResponse({ success: true, filledCount });
           },

@@ -1,66 +1,46 @@
 export const FIELDS = [
-  { key: "email", label: "email" },
-  { key: "prn", label: "prn" },
-  { key: "fullName", label: "full name" },
-  { key: "dob", label: "date of birth (yyyy-mm-dd)" },
-  { key: "mobile", label: "mobile number" },
-  { key: "gender", label: "gender (male/female)" },
+  "email",
+  "prn",
+  "full name",
+  "date of birth (yyyy-mm-dd)",
+  "mobile number",
+  "gender (male/female)",
 
-  { key: "college", label: "college name" },
-  { key: "degree", label: "degree (BE/BTech/BSc/BCA)" },
-  { key: "branch", label: "branch (CSE/IT/ECE/Mech)" },
-  { key: "passYear", label: "year of graduation (2026/2027)" },
+  "college name",
+  "degree (BE/BTech)",
+  "branch (CSE/IT)",
+  "year of graduation (2026/2027)",
 
-  { key: "tenthPercent", label: "10th %" },
-  { key: "twelthPercent", label: "12th %" },
-  { key: "diplomaPercent", label: "diploma %" },
-  { key: "degreePercent", label: "be / btech %" },
+  "10th %",
+  "12th %",
+  "diploma %",
+  "be / btech %",
 
-  { key: "cocubesScore", label: "cocubes score" },
+  "cocubes score",
 
-  { key: "codechefRating", label: "codechef rating (0–5)" },
-  { key: "codechefLink", label: "codechef profile link" },
+  "codechef rating (0–5)",
+  "codechef profile link",
 
-  { key: "hackerrankRating", label: "hackerrank rating (0–5)" },
-  { key: "hackerrankLink", label: "hackerrank profile link" },
+  "hackerrank rating (0–5)",
+  "hackerrank profile link",
 
-  { key: "leetcodeScore", label: "leetcode score" },
-  { key: "leetcodeLink", label: "leetcode profile link" },
+  "leetcode score",
+  "leetcode profile link",
 
-  { key: "hackerearthRating", label: "hackerearth rating (0–5)" },
-  { key: "hackerearthLink", label: "hackerearth profile link" },
+  "hackerearth rating (0–5)",
+  "hackerearth profile link",
 
-  { key: "githubLink", label: "github profile link" },
-  { key: "linkedinLink", label: "linkedin profile link" },
+  "github profile link",
+  "linkedin profile link",
 
-  {
-    key: "hasTechnicalCourse",
-    label: "technical courses / certifications (yes/no)",
-  },
-  {
-    key: "technicalCoursePlatform",
-    label: "course platform",
-  },
-  {
-    key: "technicalCourseDuration",
-    label: "course duration (hrs)",
-  },
-  {
-    key: "cgpa",
-    label: "cgpa (on a scale of 10)",
-  },
+  "technical courses / certifications (yes/no)",
+  "technical course platform",
+  "technical course duration (hrs)",
 
-  {
-    key: "activeBacklogs",
-    label: "active backlogs (in number)",
-  },
-  { key: "yearDown", label: "year down (yes/no)" },
+  "cgpa (on a scale of 10)",
 
-  { key: "technologies", label: "technologies / skills" },
-  { key: "projects", label: "projects" },
-  { key: "technicalAchievements", label: "technical achievements" },
-  {
-    key: "personalAchievements",
-    label: "personal achievements",
-  },
+  "technologies / skills",
+  "projects",
+  "technical achievements",
+  "personal achievements",
 ];

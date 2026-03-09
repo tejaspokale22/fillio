@@ -1,4 +1,4 @@
-const CACHE_KEY = "fillio_label_cache";
+const CACHE_KEY = "fillio_cache";
 
 // load cache from storage
 async function loadCache() {

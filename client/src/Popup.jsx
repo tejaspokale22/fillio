@@ -11,229 +11,103 @@ import MoreModal from "./components/MoreModal";
 import Info from "./components/Info";
 import ShortcutsModal from "./components/ShortcutsModal";
 import Search from "./components/Search";
+import Spinner from "./components/Spinner";
 import { FIELDS } from "./utils/constants";
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts.js";
+import { normalize, showStatus } from "./utils/tools.js";
 
 export default function Popup() {
-  const [formData, setFormData] = useState({});
-  const [customFields, setCustomFields] = useState([]);
+  const [profile, setProfile] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showMoreModal, setShowMoreModal] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [modalLabel, setModalLabel] = useState("");
   const [modalValue, setModalValue] = useState("");
-  const [removedKeys, setRemovedKeys] = useState(new Set());
   const [fillStatus, setFillStatus] = useState("");
   const [status, setStatus] = useState("");
   const [modalError, setModalError] = useState("");
   const [copiedField, setCopiedField] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (key, value) =>
-    setFormData((p) => ({ ...p, [key]: value }));
+  const addField = () => {
+    const label = modalLabel?.trim();
+    const value = modalValue?.trim();
 
-  const handleRemoveField = (key) => {
-    setFormData((p) => {
-      const cp = { ...p };
-      cp[key] = "";
-      return cp;
-    });
-    setRemovedKeys((s) => {
-      const ns = new Set(s);
-      ns.add(key);
-      return ns;
-    });
-
-    if (typeof chrome !== "undefined" && chrome.storage) {
-      chrome.storage.sync.get(["profile", "hiddenStandardFields"], (res) => {
-        const currentProfile = res.profile || {};
-        const currentHidden = new Set(res.hiddenStandardFields || []);
-        currentProfile[key] = "";
-        currentHidden.add(key);
-        chrome.storage.sync.set({
-          profile: currentProfile,
-          hiddenStandardFields: Array.from(currentHidden),
-        });
-      });
-    }
-  };
-
-  const handleAddCustom = () => {
-    const labelKeyword = modalLabel.trim();
-    const value = modalValue.trim();
-
-    if (!labelKeyword) {
-      setModalError("field label cannot be empty.");
+    if (!label) {
+      setModalError("Field label cannot be empty.");
+      setTimeout(() => setModalError(""), 1600);
       return;
     }
 
-    setCustomFields((p) => [...p, { labelKeyword, value }]);
+    const normalizedLabel = normalize(label);
+
+    const exists = Object.keys(profile).some((key) => key === normalizedLabel);
+
+    if (exists) {
+      setModalError("This field label already exists.");
+      setTimeout(() => setModalError(""), 1600);
+      return;
+    }
+
+    setProfile((prev) => ({
+      ...prev,
+      [normalizedLabel]: value,
+    }));
+
     setModalLabel("");
     setModalValue("");
     setModalError("");
     setShowModal(false);
   };
 
-  const handleImportFields = (importedFields) => {
-    if (!importedFields || importedFields.length === 0) return 0;
+  const updateField = (key, value) =>
+    setProfile((p) => ({ ...p, [key]: value }));
 
-    // map of existing fields → { type, key/index, value }
-    const existingFieldMap = new Map();
-
-    // standard fields
-    FIELDS.forEach((f) => {
-      if (!removedKeys.has(f.key)) {
-        const value = formData[f.key];
-        existingFieldMap.set(f.label.toLowerCase(), {
-          type: "standard",
-          key: f.key,
-          value: value || "",
-        });
-      }
+  const removeField = (key) =>
+    setProfile((prev) => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
     });
-
-    // custom fields
-    customFields.forEach((f, idx) => {
-      existingFieldMap.set(f.labelKeyword.toLowerCase(), {
-        type: "custom",
-        index: idx,
-        value: f.value || "",
-      });
-    });
-
-    let duplicateCount = 0;
-    const newFields = [];
-    const updatedStandardFields = {};
-    const customFieldUpdates = new Map();
-
-    importedFields.forEach((field) => {
-      const label = field.labelKeyword.toLowerCase();
-      const existing = existingFieldMap.get(label);
-
-      if (existing) {
-        // Field exists
-        if (existing.value.trim().length > 0) {
-          // Has value - consider duplicate
-          duplicateCount++;
-        } else {
-          // Empty value - update with imported value
-          if (existing.type === "standard") {
-            updatedStandardFields[existing.key] = field.value;
-          } else {
-            customFieldUpdates.set(existing.index, field.value);
-          }
-        }
-      } else {
-        // Field doesn't exist - add as new
-        newFields.push(field);
-      }
-    });
-
-    // Apply updates to standard fields
-    if (Object.keys(updatedStandardFields).length > 0) {
-      setFormData((prev) => ({ ...prev, ...updatedStandardFields }));
-    }
-
-    // Apply updates to custom fields
-    if (customFieldUpdates.size > 0) {
-      setCustomFields((prev) =>
-        prev.map((field, idx) =>
-          customFieldUpdates.has(idx)
-            ? { ...field, value: customFieldUpdates.get(idx) }
-            : field,
-        ),
-      );
-    }
-
-    // Add new fields as custom fields
-    if (newFields.length > 0) {
-      setCustomFields((prev) => [...prev, ...newFields]);
-    }
-
-    return duplicateCount;
-  };
-
-  const removeCustom = (i) =>
-    setCustomFields((p) => p.filter((_, idx) => idx !== i));
-
-  const updateCustomField = (index, value) => {
-    setCustomFields((prev) =>
-      prev.map((field, idx) => (idx === index ? { ...field, value } : field)),
-    );
-  };
-
-  const handleCopy = async (fieldKey, value) => {
-    if (!value || !String(value).trim()) return;
-
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedField(fieldKey);
-      setTimeout(() => setCopiedField(null), 1600);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
-
-  const showStatus = (setter, message, duration = 1600) => {
-    setter(message);
-    setTimeout(() => setter(""), duration);
-  };
 
   const handleSave = () => {
-    const visibleStandardFields = FIELDS.filter((f) => !removedKeys.has(f.key));
-    const hasVisibleFields =
-      visibleStandardFields.length > 0 || customFields.length > 0;
-
-    if (!hasVisibleFields) {
-      showStatus(
-        setStatus,
-        "please add at least one field before saving.",
-        1600,
-      );
+    if (typeof chrome === "undefined" || !chrome.storage) {
+      showStatus(setStatus, "Chrome extension API not available.", 1600);
       return;
     }
 
-    const validCustomFields = customFields.filter(
-      (field) => field.labelKeyword && field.labelKeyword.trim(),
+    chrome.storage.sync.set({ profile }, () =>
+      showStatus(setStatus, "saved ✅", 1600),
     );
-
-    if (typeof chrome !== "undefined" && chrome.storage) {
-      chrome.storage.sync.get(["hiddenStandardFields"], (res) => {
-        chrome.storage.sync.set(
-          {
-            profile: formData,
-            customFields: validCustomFields,
-            hiddenStandardFields: res.hiddenStandardFields || [],
-          },
-          () => showStatus(setStatus, "saved ✅", 1600),
-        );
-      });
-    } else {
-      showStatus(setStatus, "chrome extension API not available.", 1600);
-    }
   };
 
-  const handleFill = () => {
+  const handleAutofill = () => {
+    if (loading) return;
+
     if (typeof chrome === "undefined" || !chrome.tabs) {
-      showStatus(setFillStatus, "chrome extension API not available.", 1600);
+      showStatus(setFillStatus, "Chrome extension API not available.", 1600);
       return;
     }
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (!tabs || !tabs[0]) {
+      const tab = tabs?.[0];
+
+      if (!tab) {
         showStatus(
           setFillStatus,
-          "no active tab found. open the google form tab first.",
+          "No active tab found. Open the Google Form tab first.",
           1600,
         );
         return;
       }
 
-      const tab = tabs[0];
-      if (!tab.url || !tab.url.includes("docs.google.com/forms")) {
-        showStatus(setFillStatus, "please open a google form tab first.", 1600);
+      if (!tab.url?.includes("docs.google.com/forms")) {
+        showStatus(setFillStatus, "Please open a Google Form tab first.", 1600);
         return;
       }
+
+      setLoading(true);
 
       const sendFillMessage = () => {
         chrome.tabs.sendMessage(tab.id, { action: "FILL_FORM" }, (response) => {
@@ -247,34 +121,52 @@ export default function Popup() {
                 if (chrome.runtime.lastError) {
                   showStatus(
                     setFillStatus,
-                    "failed to load. please refresh the page.",
+                    "Failed to load. Please refresh the page.",
                     1600,
                   );
-                } else {
-                  setTimeout(() => sendFillMessage(), 100);
+                  setLoading(false);
+                  return;
                 }
+
+                setTimeout(sendFillMessage, 100);
               },
             );
-          } else if (response && !response.success) {
-            showStatus(setFillStatus, response.message, 1600);
-          } else if (response && response.success) {
+            return;
+          }
+
+          if (!response?.success) {
             showStatus(
               setFillStatus,
-              `filled ${response.filledCount} field(s) successfully`,
+              response?.message || "Autofill failed.",
               1600,
             );
+            setLoading(false);
+            return;
           }
+
+          if (response.filledCount > 0) {
+            showStatus(
+              setFillStatus,
+              `Filled ${response.filledCount} field(s) successfully.`,
+              1600,
+            );
+          } else {
+            showStatus(setFillStatus, "No fields found to autofill.", 1600);
+          }
+
+          setLoading(false);
         });
       };
 
       try {
         sendFillMessage();
-      } catch (e) {
+      } catch {
         showStatus(
           setFillStatus,
-          "unable to trigger fill. please reopen the form.",
+          "Unable to trigger fill. Please re-open the form.",
           1600,
         );
+        setLoading(false);
       }
     });
   };
@@ -305,30 +197,90 @@ export default function Popup() {
     });
   };
 
-  useEffect(() => {
-    if (typeof chrome !== "undefined" && chrome.storage) {
-      chrome.storage.sync.get(
-        ["profile", "customFields", "hiddenStandardFields"],
-        (result) => {
-          const profile = result.profile || {};
-          const hiddenStandardFields = result.hiddenStandardFields || [];
+  const handleImportProfile = (importedProfile) => {
+    if (!importedProfile || typeof importedProfile !== "object") return 0;
 
-          setFormData(profile);
-          setCustomFields(result.customFields || []);
-          setRemovedKeys(new Set(hiddenStandardFields));
-        },
+    let duplicateCount = 0;
+    const updates = {};
+
+    Object.entries(importedProfile).forEach(([key, value]) => {
+      const label = key?.trim();
+      if (!label) return;
+
+      const normalizedLabel = normalize(label);
+
+      // find matching existing key
+      const existingKey = Object.keys(profile).find(
+        (k) => normalize(k) === normalizedLabel,
       );
+
+      if (existingKey) {
+        const existingValue = profile[existingKey];
+
+        if (!existingValue || !existingValue.trim()) {
+          updates[existingKey] = value ?? "";
+        } else {
+          duplicateCount++;
+        }
+
+        return;
+      }
+
+      updates[label] = value ?? "";
+    });
+
+    if (Object.keys(updates).length > 0) {
+      setProfile((prev) => ({
+        ...prev,
+        ...updates,
+      }));
     }
+
+    return duplicateCount;
+  };
+
+  const handleCopy = async (fieldKey, value) => {
+    if (!value || !String(value).trim()) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(fieldKey);
+      setTimeout(() => setCopiedField(null), 1600);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof chrome === "undefined" || !chrome.storage) return;
+
+    chrome.storage.sync.get(["profile"], ({ profile }) => {
+      const storedProfile =
+        profile ?? Object.fromEntries(FIELDS.map((f) => [f, ""]));
+
+      const orderedProfile = {
+        ...Object.fromEntries(
+          FIELDS.filter((k) => k in storedProfile).map((k) => [
+            k,
+            storedProfile[k],
+          ]),
+        ),
+        ...Object.fromEntries(
+          Object.entries(storedProfile).filter(([k]) => !FIELDS.includes(k)),
+        ),
+      };
+
+      setProfile(orderedProfile);
+    });
   }, []);
 
-  // Keyboard shortcuts
   useKeyboardShortcuts(
     {
       onSave: handleSave,
-      onAutofill: handleFill,
+      onAutofill: handleAutofill,
       onReset: handleReset,
     },
-    [formData, customFields, removedKeys],
+    [profile],
   );
 
   return (
@@ -372,11 +324,18 @@ export default function Popup() {
               id="fillBtn"
               title="ctrl + L"
               type="button"
-              onClick={handleFill}
-              className="w-full py-2 rounded-md border-none text-[13px] font-semibold cursor-pointer bg-[#02a36e] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
+              onClick={handleAutofill}
+              disabled={loading}
+              className="w-full h-9 rounded-md border-none text-[13px] font-semibold cursor-pointer bg-[#02a36e] text-white transition-all duration-200 hover:bg-[#059669] flex items-center justify-center gap-2"
             >
-              <Autofill />
-              autofill google form
+              {loading ? (
+                <Spinner />
+              ) : (
+                <>
+                  <Autofill />
+                  <span>autofill google form</span>
+                </>
+              )}
             </button>
             <div
               id="fillStatus"
@@ -389,8 +348,7 @@ export default function Popup() {
 
         {/* Fields list - scrollable */}
         <div className="flex-1 overflow-y-auto px-2.5 pb-1.5 my-3">
-          {FIELDS.filter((f) => !removedKeys.has(f.key)).length === 0 &&
-          customFields.length === 0 ? (
+          {Object.keys(profile).length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">
               <img
                 src="/no-fields-available.png"
@@ -398,36 +356,25 @@ export default function Popup() {
                 className="w-40 h-32 mb-2"
               />
               <p className="text-[13px] text-gray-500 font-medium mb-1.5">
-                no fields available
+                No fields available.
               </p>
               <p className="text-[11px] text-gray-400">
-                add custom fields or import from JSON to get started
+                Add fields or import from JSON to get started.
               </p>
             </div>
           ) : (
             <>
-              {/* Search component */}
               <Search
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
               {(() => {
-                const filteredStandardFields = FIELDS.filter(
-                  (f) =>
-                    !removedKeys.has(f.key) &&
-                    f.label.toLowerCase().includes(searchQuery.toLowerCase()),
+                const filteredFields = Object.entries(profile).filter(([key]) =>
+                  key.toLowerCase().includes(searchQuery.toLowerCase()),
                 );
-                const filteredCustomFields = customFields.filter((c) =>
-                  c.labelKeyword
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase()),
-                );
-                const hasResults =
-                  filteredStandardFields.length > 0 ||
-                  filteredCustomFields.length > 0;
 
-                if (searchQuery && !hasResults) {
+                if (searchQuery && filteredFields.length === 0) {
                   return (
                     <div className="flex flex-col items-center justify-center px-4 py-8">
                       <img
@@ -436,110 +383,51 @@ export default function Popup() {
                         className="w-36 h-36"
                       />
                       <p className="text-[13px] text-gray-500 font-medium mb-1">
-                        no results found
+                        No results found.
                       </p>
                       <p className="text-[11px] text-gray-400">
-                        no fields matching "{searchQuery}"
+                        No fields matching "{searchQuery}"
                       </p>
                     </div>
                   );
                 }
 
-                return (
-                  <>
-                    {filteredStandardFields.map((f) =>
-                      !removedKeys.has(f.key) ? (
-                        <div key={f.key} className="mb-3">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <label className="text-[11px] text-[#0f172a] m-0">
-                              {f.label}
-                            </label>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleCopy(f.key, formData[f.key])
-                                }
-                                className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-                                title="copy"
-                              >
-                                {copiedField === f.key ? <Tick /> : <Copy />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveField(f.key)}
-                                className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
-                                title="remove"
-                              >
-                                <Trash />
-                              </button>
-                            </div>
-                          </div>
+                return filteredFields.map(([key, value]) => (
+                  <div key={key} className="mb-3">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <label className="text-[11px] text-[#0f172a] m-0">
+                        {key}
+                      </label>
 
-                          <input
-                            id={f.key}
-                            value={formData[f.key] || ""}
-                            onChange={(e) =>
-                              handleChange(f.key, e.target.value)
-                            }
-                            className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
-                          />
-                        </div>
-                      ) : null,
-                    )}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(key, value)}
+                          className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
+                          title="copy"
+                        >
+                          {copiedField === key ? <Tick /> : <Copy />}
+                        </button>
 
-                    {/* custom fields */}
-                    <div id="customList">
-                      {filteredCustomFields.map((c, i) => {
-                        const originalIndex = customFields.findIndex(
-                          (field) =>
-                            field.labelKeyword === c.labelKeyword &&
-                            field.value === c.value,
-                        );
-                        return (
-                          <div key={i} className="mb-2.5">
-                            <div className="flex items-center justify-between mb-1">
-                              <label className="text-[11px] text-[#0f172a] m-0">
-                                {c.labelKeyword}
-                              </label>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleCopy(`custom-${i}`, c.value)
-                                  }
-                                  className="border-none bg-transparent text-[#0f172a] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(15,23,42,0.1)]"
-                                  title="copy"
-                                >
-                                  {copiedField === `custom-${i}` ? (
-                                    <Tick />
-                                  ) : (
-                                    <Copy />
-                                  )}
-                                </button>
-                                <button
-                                  onClick={() => removeCustom(originalIndex)}
-                                  className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
-                                  type="button"
-                                  title="remove"
-                                >
-                                  <Trash />
-                                </button>
-                              </div>
-                            </div>
-                            <input
-                              value={c.value}
-                              onChange={(e) =>
-                                updateCustomField(originalIndex, e.target.value)
-                              }
-                              className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
-                            />
-                          </div>
-                        );
-                      })}
+                        <button
+                          type="button"
+                          onClick={() => removeField(key)}
+                          className="border-none bg-transparent text-[#dc2626] cursor-pointer p-0.5 flex items-center justify-center w-5 h-5 rounded transition-colors duration-200 hover:bg-[rgba(220,38,38,0.1)]"
+                          title="remove"
+                        >
+                          <Trash />
+                        </button>
+                      </div>
                     </div>
-                  </>
-                );
+
+                    <input
+                      id={key}
+                      value={value || ""}
+                      onChange={(e) => updateField(key, e.target.value)}
+                      className="w-full py-[7px] px-2 text-[12px] rounded-md border border-[#e2e8f0] outline-none bg-[#f9fafb] focus:border-[#0f172a] focus:bg-white"
+                    />
+                  </div>
+                ));
               })()}
             </>
           )}
@@ -550,10 +438,10 @@ export default function Popup() {
           {/* add custom field */}
           <div className="mb-2">
             <button
-              id="addCustomBtn"
+              id="addFieldBtn"
               type="button"
               onClick={() => setShowModal(true)}
-              className="text-[12px] py-1 rounded-xl border border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center gap-2"
+              className="text-[12px] py-1 rounded-xl border border-[#3b82f6] bg-[#eff6ff] text-[#3b82f6] cursor-pointer font-medium transition-all duration-200 hover:bg-[#dbeafe] w-full flex items-center justify-center"
             >
               <Add />
               add custom field
@@ -591,7 +479,7 @@ export default function Popup() {
             }}
             onLabelChange={(e) => setModalLabel(e.target.value)}
             onValueChange={(e) => setModalValue(e.target.value)}
-            onAdd={handleAddCustom}
+            onAdd={addField}
           />
         )}
 
@@ -599,10 +487,8 @@ export default function Popup() {
         {showMoreModal && (
           <MoreModal
             onClose={() => setShowMoreModal(false)}
-            formData={formData}
-            customFields={customFields}
-            fields={FIELDS}
-            onImportFields={handleImportFields}
+            profile={profile}
+            onImport={handleImportProfile}
           />
         )}
 
