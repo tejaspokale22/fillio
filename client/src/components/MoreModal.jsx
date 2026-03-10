@@ -31,7 +31,7 @@ export default function MoreModal({ onClose, profile, onImport }) {
     >
       <div className="bg-white p-5 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] w-[90%] max-w-[320px] border border-[#e2e8f0]">
         <div className="text-[14px] font-semibold text-[#0f172a] mb-4">
-          more options
+          More options
         </div>
 
         <div className="flex flex-col gap-2">

@@ -8,15 +8,16 @@ dotenv.config();
 const app = express();
 
 // ----- CORS configuration -----
-const allowedOrigins = [
-  "chrome-extension://cbgcaaalkjkegcpidljbhjemoopimoff",
-  "http://localhost:5173",
-];
+const allowedOrigins = ["http://localhost:5173"];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.startsWith("chrome-extension://")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("CORS not allowed"));

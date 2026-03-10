@@ -1,4 +1,3 @@
-// normalize text for matching
 function normalize(text) {
   return (text || "")
     .toLowerCase()
@@ -7,7 +6,6 @@ function normalize(text) {
     .trim();
 }
 
-// clean labels before AI mapping
 function cleanLabel(text) {
   return (text || "")
     .replace(/\n/g, " ")
@@ -17,93 +15,40 @@ function cleanLabel(text) {
     .trim();
 }
 
-// check if question is required
-function isRequired(question) {
-  return (
-    question.innerText.includes("*") ||
-    question.querySelector('[aria-label*="Required"]')
-  );
-}
-
-// check top email field
 function fillTopEmail(profile) {
-  if (!profile?.email) return false;
+  const email = profile?.email;
+  if (!email) return false;
 
-  const emailCheckbox = document.querySelector(
+  const checkbox = document.querySelector(
     'div[role="checkbox"][aria-label*="email"]',
   );
 
-  if (emailCheckbox) {
-    const isChecked = emailCheckbox.getAttribute("aria-checked") === "true";
-    if (!isChecked) emailCheckbox.click();
+  if (checkbox) {
+    if (checkbox.getAttribute("aria-checked") !== "true") {
+      checkbox.click();
+    }
     return true;
   }
 
-  const emailInput =
+  const input =
     document.querySelector("input[type='email']") ||
     document.querySelector("input[autocomplete='email']") ||
     document.querySelector('input[aria-label*="Email"]');
 
-  if (!emailInput) return false;
+  if (!input) return false;
 
-  const nativeSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
+  const setValue = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
     "value",
   ).set;
 
-  nativeSetter.call(emailInput, profile.email);
+  setValue.call(input, email);
 
-  emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-  emailInput.dispatchEvent(new Event("change", { bubbles: true }));
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  input.dispatchEvent(new Event("change", { bubbles: true }));
 
   return true;
 }
-
-// default fallback filler
-// function fillDefault(question) {
-//   const radios = question.querySelectorAll('[role="radio"]');
-//   if (radios.length) {
-//     for (const r of radios) {
-//       const text = normalize(
-//         r.getAttribute("aria-label") || r.textContent || "",
-//       );
-//       if (text === "no" || text === "0" || text.includes("no")) {
-//         r.click();
-//         return true;
-//       }
-//     }
-//     radios[0].click();
-//     return true;
-//   }
-
-//   const listbox = question.querySelector('[role="listbox"]');
-//   if (listbox) {
-//     listbox.click();
-//     const options = question.querySelectorAll('[role="option"]');
-//     if (options.length) {
-//       options[0].click();
-//       return true;
-//     }
-//   }
-
-//   const input = question.querySelector("input:not([type='file'])");
-//   if (input) {
-//     input.value = "NA";
-//     input.dispatchEvent(new Event("input", { bubbles: true }));
-//     return true;
-//   }
-
-//   const textarea = question.querySelector("textarea");
-//   if (textarea) {
-//     textarea.value = "NA";
-//     textarea.dispatchEvent(new Event("input", { bubbles: true }));
-//     return true;
-//   }
-
-//   return false;
-// }
-
-// fill dropdown
 
 function fillDropdown(question, value) {
   const listbox = question.querySelector('[role="listbox"]');
@@ -125,58 +70,87 @@ function fillDropdown(question, value) {
   return false;
 }
 
-// fill question
-function fillQuestion(question, value, key) {
+function fillQuestion(question, value) {
   if (!value) return;
 
-  if (key === "mobile") {
-    value = String(value).replace(/\D/g, "").slice(-10);
-  }
+  value = String(value).trim();
 
-  if (key === "gender") {
-    const g = normalize(value);
-    if (g.startsWith("m")) value = "male";
-    if (g.startsWith("f")) value = "female";
-  }
+  const triggerInput = (el, val) => {
+    el.value = val;
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  };
 
-  const date = question.querySelector("input[type='date']");
-  if (date) {
-    date.value = value;
-    date.dispatchEvent(new Event("input", { bubbles: true }));
+  const normalizePhone = (val) => {
+    const digits = val.replace(/\D/g, "");
+    return digits.length >= 10 ? digits.slice(-10) : val;
+  };
+
+  const normalizeGender = (val) => {
+    const g = normalize(val);
+    if (g.startsWith("m")) return "male";
+    if (g.startsWith("f")) return "female";
+    return val;
+  };
+
+  value = normalizePhone(value);
+  value = normalizeGender(value);
+
+  const dateInput = question.querySelector("input[type='date']");
+  if (dateInput) {
+    triggerInput(dateInput, value);
     return;
   }
 
   if (fillDropdown(question, value)) return;
 
   const radios = question.querySelectorAll('[role="radio"]');
+
   if (radios.length) {
     const target = normalize(value);
+
+    let bestMatch = null;
+
     for (const radio of radios) {
-      const text = normalize(
-        radio.getAttribute("aria-label") || radio.textContent,
-      );
-      if (text === target || text.includes(target) || target.includes(text)) {
+      const optionText =
+        radio.getAttribute("data-value") ||
+        radio.getAttribute("aria-label") ||
+        radio.textContent;
+
+      const normalizedOption = normalize(optionText);
+
+      // exact match (highest priority)
+      if (normalizedOption === target) {
         radio.click();
         return;
       }
+
+      // strong partial match
+      if (
+        normalizedOption.includes(target) ||
+        target.includes(normalizedOption)
+      ) {
+        bestMatch = radio;
+      }
+    }
+
+    if (bestMatch) {
+      bestMatch.click();
+      return;
     }
   }
 
   const textarea = question.querySelector("textarea");
   if (textarea) {
-    textarea.value = value;
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    triggerInput(textarea, value);
     return;
   }
 
   const input = question.querySelector("input:not([type='file'])");
   if (input) {
-    input.value = value;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    triggerInput(input, value);
   }
 }
 
-// extract labels
 function extractLabels() {
   const labels = [];
 
@@ -190,7 +164,6 @@ function extractLabels() {
   return labels;
 }
 
-// autofill using AI mapping
 function autofill(profile, mapping = {}) {
   let filledCount = 0;
 
@@ -204,35 +177,19 @@ function autofill(profile, mapping = {}) {
     const key = mapping[label];
 
     if (key && profile[key]) {
-      fillQuestion(question, profile[key], key);
+      fillQuestion(question, profile[key]);
       filledCount++;
-      return;
-    }
-
-    for (const [fieldLabel, value] of Object.entries(profile)) {
-      if (!value) continue;
-
-      const q = normalize(label);
-      const f = normalize(fieldLabel);
-
-      if (q.includes(f) || f.includes(q)) {
-        fillQuestion(question, value);
-        filledCount++;
-        return;
-      }
     }
   });
 
   return filledCount;
 }
 
-// clear form
 function resetGoogleForm() {
   const clearBtn = document.querySelector('div[jsname="X5DuWc"]');
   if (clearBtn) clearBtn.click();
 }
 
-// message listener
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === "FILL_FORM") {
     chrome.storage.sync.get(["profile"], (result) => {

@@ -32,7 +32,7 @@ export default function ResetGoogleForm() {
         className="w-full py-2.5 px-3 rounded-lg border border-[#e2e8f0] text-[12px] font-medium cursor-pointer transition-all duration-200 bg-white text-[#0f172a] hover:bg-[#f0f0f0] hover:border-[#0f172a] flex items-center justify-start gap-2.5"
       >
         <RotateCcw size={21} strokeWidth={2} />
-        reset google form
+        Reset google form
       </button>
 
       {error && (

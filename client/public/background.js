@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
       // check cache first
       for (const label of formLabels) {
-        if (label in cache) {
+        if (Object.hasOwn(cache, label)) {
           mapping[label] = cache[label];
         } else {
           unknownLabels.push(label);
