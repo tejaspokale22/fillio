@@ -84,7 +84,7 @@ Install directly from the Microsoft Add-ons:
 ### Smart Autofill
 
 - One-click autofill for Google Forms
-- Intelligent field matching based on label keywords
+- AI-Powered Intelligent field matching based on label keywords
 - Supports text inputs, textareas, dropdowns, radio buttons, and checkboxes
 - Real-time status notifications
 
