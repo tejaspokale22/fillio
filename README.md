@@ -119,25 +119,25 @@ Install directly from the Microsoft Add-ons:
 
 ### Main Interface
 
-![Main Interface](public/ss/demo.png)
+![Main Interface](client/public/ss/demo.png)
 
 Main extension popup with saved form fields and quick access controls.
 
 ### Adding Custom Fields
 
-![Add Custom Field](public/ss/add_custom_field.png)
+![Add Custom Field](client/public/ss/add_custom_field.png)
 
 Add custom fields by specifying label keywords that match form field labels.
 
 ### More Options
 
-![More Options](public/ss/more_options.png)
+![More Options](client/public/ss/more_options.png)
 
 Access JSON import/export and PDF generation features.
 
 ### Keyboard Shortcuts
 
-![Keyboard Shortcuts](public/ss/keyboard_shortcuts.png)
+![Keyboard Shortcuts](client/public/ss/keyboard_shortcuts.png)
 
 View all available keyboard shortcuts for quick access.
 
