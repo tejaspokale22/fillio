@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Fillio - Autofill google forms",
   "version": "2.0.1",
-  "description": "An edge extension to autofill repetitive google forms in seconds.",
+  "description": "A chrome extension to autofill repetitive google forms in seconds.",
   "permissions": [
     "storage",
     "activeTab",
