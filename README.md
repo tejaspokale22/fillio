@@ -1,8 +1,5 @@
 # Fillio (v2.0.0) - Autofill google forms in seconds
 
-[![Stars](https://img.shields.io/github/stars/tejaspokale22/fillio?style=social)](https://github.com/tejaspokale22/fillio/stargazers)
-[![Forks](https://img.shields.io/github/forks/tejaspokale22/fillio?style=social)](https://github.com/tejaspokale22/fillio/network/members)
-
 A browser extension designed to streamline the process of filling out repetitive Google Forms. Save your info once and autofill it across similar forms in a single click.
 
 [Watch demo](https://drive.google.com/file/d/1EBITzqwqtaMwPD7KRIfyW454VBE9T8vr/view?usp=sharing)
