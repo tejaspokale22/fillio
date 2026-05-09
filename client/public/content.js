@@ -201,12 +201,49 @@ function fillQuestion(question, value) {
 
   if (fillDropdown(question, value)) return;
 
+  // const radios = question.querySelectorAll('[role="radio"]');
+
+  // if (radios.length) {
+  //   const target = normalize(value);
+
+  //   let bestMatch = null;
+
+  //   for (const radio of radios) {
+  //     const optionText =
+  //       radio.getAttribute("data-value") ||
+  //       radio.getAttribute("aria-label") ||
+  //       radio.textContent;
+
+  //     const normalizedOption = normalize(optionText);
+
+  //     // exact match
+  //     if (normalizedOption === target) {
+  //       radio.click();
+  //       return;
+  //     }
+
+  //     // partial match
+  //     if (
+  //       normalizedOption.includes(target) ||
+  //       target.includes(normalizedOption)
+  //     ) {
+  //       bestMatch = radio;
+  //     }
+  //   }
+
+  //   if (bestMatch) {
+  //     bestMatch.click();
+  //     return;
+  //   }
+  // }
+
   const radios = question.querySelectorAll('[role="radio"]');
 
   if (radios.length) {
     const target = normalize(value);
 
     let bestMatch = null;
+    let bestScore = 0;
 
     for (const radio of radios) {
       const optionText =
@@ -216,22 +253,36 @@ function fillQuestion(question, value) {
 
       const normalizedOption = normalize(optionText);
 
-      // exact match
+      // Exact match
       if (normalizedOption === target) {
         radio.click();
         return;
       }
 
-      // partial match
-      if (
-        normalizedOption.includes(target) ||
-        target.includes(normalizedOption)
-      ) {
+      // Fuzzy word matching
+      const targetWords = target.split(" ");
+
+      let score = 0;
+
+      for (const word of targetWords) {
+        // Ignore very small/common words
+        if (
+          word.length > 2 &&
+          normalizedOption.includes(word)
+        ) {
+          score++;
+        }
+      }
+
+      // Keep the option with highest score
+      if (score > bestScore) {
+        bestScore = score;
         bestMatch = radio;
       }
     }
 
-    if (bestMatch) {
+    // Select only if enough similarity exists
+    if (bestMatch && bestScore >= 1) {
       bestMatch.click();
       return;
     }
