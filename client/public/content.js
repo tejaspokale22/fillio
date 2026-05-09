@@ -70,6 +70,87 @@ function fillDropdown(question, value) {
   return false;
 }
 
+// function fillQuestion(question, value) {
+//   if (!value) return;
+
+//   value = String(value).trim();
+
+//   const triggerInput = (el, val) => {
+//     el.value = val;
+//     el.dispatchEvent(new Event("input", { bubbles: true }));
+//   };
+
+//   const normalizePhone = (val) => {
+//     const digits = val.replace(/\D/g, "");
+//     return digits.length >= 10 ? digits.slice(-10) : val;
+//   };
+
+//   const normalizeGender = (val) => {
+//     const g = normalize(val);
+//     if (g.startsWith("m")) return "male";
+//     if (g.startsWith("f")) return "female";
+//     return val;
+//   };
+
+//   value = normalizePhone(value);
+//   value = normalizeGender(value);
+
+//   const dateInput = question.querySelector("input[type='date']");
+//   if (dateInput) {
+//     triggerInput(dateInput, value);
+//     return;
+//   }
+
+//   if (fillDropdown(question, value)) return;
+
+//   const radios = question.querySelectorAll('[role="radio"]');
+
+//   if (radios.length) {
+//     const target = normalize(value);
+
+//     let bestMatch = null;
+
+//     for (const radio of radios) {
+//       const optionText =
+//         radio.getAttribute("data-value") ||
+//         radio.getAttribute("aria-label") ||
+//         radio.textContent;
+
+//       const normalizedOption = normalize(optionText);
+
+//       // exact match (highest priority)
+//       if (normalizedOption === target) {
+//         radio.click();
+//         return;
+//       }
+
+//       // strong partial match
+//       if (
+//         normalizedOption.includes(target) ||
+//         target.includes(normalizedOption)
+//       ) {
+//         bestMatch = radio;
+//       }
+//     }
+
+//     if (bestMatch) {
+//       bestMatch.click();
+//       return;
+//     }
+//   }
+
+//   const textarea = question.querySelector("textarea");
+//   if (textarea) {
+//     triggerInput(textarea, value);
+//     return;
+//   }
+
+//   const input = question.querySelector("input:not([type='file'])");
+//   if (input) {
+//     triggerInput(input, value);
+//   }
+// }
+
 function fillQuestion(question, value) {
   if (!value) return;
 
@@ -87,15 +168,32 @@ function fillQuestion(question, value) {
 
   const normalizeGender = (val) => {
     const g = normalize(val);
+
     if (g.startsWith("m")) return "male";
     if (g.startsWith("f")) return "female";
+
     return val;
   };
 
-  value = normalizePhone(value);
-  value = normalizeGender(value);
+  // Detect question text
+  const questionText = normalize(question.innerText);
+
+  // Normalize ONLY phone fields
+  if (
+    questionText.includes("phone") ||
+    questionText.includes("mobile") ||
+    questionText.includes("contact")
+  ) {
+    value = normalizePhone(value);
+  }
+
+  // Normalize ONLY gender fields
+  if (questionText.includes("gender")) {
+    value = normalizeGender(value);
+  }
 
   const dateInput = question.querySelector("input[type='date']");
+
   if (dateInput) {
     triggerInput(dateInput, value);
     return;
@@ -118,13 +216,13 @@ function fillQuestion(question, value) {
 
       const normalizedOption = normalize(optionText);
 
-      // exact match (highest priority)
+      // exact match
       if (normalizedOption === target) {
         radio.click();
         return;
       }
 
-      // strong partial match
+      // partial match
       if (
         normalizedOption.includes(target) ||
         target.includes(normalizedOption)
@@ -140,12 +238,14 @@ function fillQuestion(question, value) {
   }
 
   const textarea = question.querySelector("textarea");
+
   if (textarea) {
     triggerInput(textarea, value);
     return;
   }
 
   const input = question.querySelector("input:not([type='file'])");
+
   if (input) {
     triggerInput(input, value);
   }
