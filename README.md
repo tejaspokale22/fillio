@@ -14,7 +14,7 @@ Install directly from the Microsoft Add-ons:
 
 Now available on Chrome Web Store as well:
 
-**[Add to Google Chrome or Brave](https://chromewebstore.google.com/detail/Fillio%20-%20Autofill%20google%20forms/omlhlilppbakfenpdnnighenicldbkbf))**
+**[Add to Google Chrome or Brave](https://chromewebstore.google.com/detail/Fillio%20-%20Autofill%20google%20forms/omlhlilppbakfenpdnnighenicldbkbf)**
 
 ### Manual Installation
 
